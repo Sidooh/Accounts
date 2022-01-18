@@ -1,4 +1,4 @@
-package services
+package util
 
 import (
 	"accounts.sidooh/errors"

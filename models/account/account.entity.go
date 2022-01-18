@@ -37,6 +37,9 @@ func All() ([]Model, error) {
 }
 
 func Create(conn *gorm.DB, a Model) (Model, error) {
+	if conn == nil {
+		conn = db.NewConnection()
+	}
 	_, err := ByPhone(a.Phone)
 	if err == nil {
 		return Model{}, errors.New("phone is already taken")

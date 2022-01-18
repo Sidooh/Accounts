@@ -1,8 +1,7 @@
-package services
+package util
 
 import (
 	"errors"
-	"fmt"
 	"github.com/ttacon/libphonenumber"
 	"strings"
 )
@@ -18,7 +17,6 @@ func GetPhoneByCountry(country string, phone string) (string, error) {
 		return phone, errors.New("number is not valid")
 	}
 
-	fmt.Println(num)
 	phone = strings.TrimPrefix(libphonenumber.Format(num, libphonenumber.E164), "+")
 
 	return phone, nil

@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"accounts.sidooh/services"
+	"accounts.sidooh/util"
 	"github.com/labstack/echo/v4"
 	//TODO(Check an update to jwt of echo using V4, currently on v3
 	"github.com/golang-jwt/jwt"
@@ -12,9 +12,9 @@ func RegisterCurrentUserHandler(e *echo.Echo) {
 	e.GET("/api/users/currentuser", func(context echo.Context) error {
 
 		user := context.Get("user").(*jwt.Token)
-		claims := user.Claims.(*services.MyCustomClaims)
+		claims := user.Claims.(*util.MyCustomClaims)
 
 		return context.JSON(http.StatusOK, claims)
 
-	}, services.CustomJWTMiddleware)
+	}, util.CustomJWTMiddleware)
 }

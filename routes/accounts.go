@@ -5,7 +5,7 @@ import (
 	"accounts.sidooh/middlewares"
 	Account "accounts.sidooh/models/account"
 	"accounts.sidooh/models/repositories"
-	"accounts.sidooh/services"
+	"accounts.sidooh/util"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"
@@ -25,7 +25,7 @@ func RegisterAccountsHandler(e *echo.Echo) {
 
 		return context.JSON(http.StatusOK, accounts)
 
-	}, services.CustomJWTMiddleware)
+	}, util.CustomJWTMiddleware)
 
 	e.GET("/api/accounts/:id", func(context echo.Context) error {
 
@@ -41,7 +41,7 @@ func RegisterAccountsHandler(e *echo.Echo) {
 
 		return context.JSON(http.StatusOK, account)
 
-	}, services.CustomJWTMiddleware)
+	}, util.CustomJWTMiddleware)
 
 	e.POST("/api/accounts", func(context echo.Context) error {
 
@@ -50,7 +50,7 @@ func RegisterAccountsHandler(e *echo.Echo) {
 			return err
 		}
 
-		phone, err := services.GetPhoneByCountry("KE", request.Phone)
+		phone, err := util.GetPhoneByCountry("KE", request.Phone)
 		if err != nil {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}

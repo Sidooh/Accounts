@@ -4,7 +4,7 @@ import (
 	"accounts.sidooh/errors"
 	"accounts.sidooh/middlewares"
 	Referral "accounts.sidooh/models/referral"
-	"accounts.sidooh/services"
+	"accounts.sidooh/util"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -24,13 +24,13 @@ func RegisterReferralsHandler(e *echo.Echo) {
 
 		return context.JSON(http.StatusOK, referrals)
 
-	}, services.CustomJWTMiddleware)
+	}, util.CustomJWTMiddleware)
 
 	e.GET("/api/referrals/:phone", func(context echo.Context) error {
 
 		phone := context.Param("phone")
 
-		phone, err := services.GetPhoneByCountry("KE", phone)
+		phone, err := util.GetPhoneByCountry("KE", phone)
 		if err != nil {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
@@ -42,7 +42,7 @@ func RegisterReferralsHandler(e *echo.Echo) {
 
 		return context.JSON(http.StatusOK, referral)
 
-	}, services.CustomJWTMiddleware)
+	}, util.CustomJWTMiddleware)
 
 	e.POST("/api/referrals", func(context echo.Context) error {
 
@@ -51,7 +51,7 @@ func RegisterReferralsHandler(e *echo.Echo) {
 			return err
 		}
 
-		phone, err := services.GetPhoneByCountry("KE", request.Phone)
+		phone, err := util.GetPhoneByCountry("KE", request.Phone)
 		if err != nil {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}

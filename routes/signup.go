@@ -4,7 +4,7 @@ import (
 	"accounts.sidooh/errors"
 	"accounts.sidooh/middlewares"
 	User "accounts.sidooh/models/user"
-	"accounts.sidooh/services"
+	"accounts.sidooh/util"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strings"
@@ -42,12 +42,12 @@ func handlerFunc(context echo.Context) error {
 		return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 	}
 
-	tokenData := services.MyCustomClaims{
+	tokenData := util.MyCustomClaims{
 		Id:    user.ID,
 		Email: user.Email,
 	}
-	token, _ := services.GenerateToken(tokenData)
-	services.SetToken(token, context)
+	token, _ := util.GenerateToken(tokenData)
+	util.SetToken(token, context)
 
 	return context.JSON(http.StatusCreated, user)
 }

@@ -1,11 +1,11 @@
-package services
+package util
 
 import (
 	"golang.org/x/crypto/bcrypt"
 )
 
 func ToHash(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 4)
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 10)
 
 	return string(bytes), err
 }

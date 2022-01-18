@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"accounts.sidooh/services"
+	"accounts.sidooh/util"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -9,9 +9,9 @@ import (
 func RegisterSignOutHandler(e *echo.Echo) {
 	e.POST("/api/users/signout", func(context echo.Context) error {
 
-		services.InvalidateToken(context)
+		util.InvalidateToken(context)
 		context.Set("user", nil)
 
 		return context.JSON(http.StatusOK, context.Get("user"))
-	}, services.CustomJWTMiddleware)
+	}, util.CustomJWTMiddleware)
 }

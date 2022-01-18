@@ -2,12 +2,34 @@ package main
 
 import (
 	"accounts.sidooh/server"
-	"os"
+	"fmt"
+	"github.com/fsnotify/fsnotify"
+	"github.com/spf13/viper"
 )
 
+func setupConfig() {
+	viper.SetConfigName(".env")
+	viper.SetConfigType("env")
+	viper.AddConfigPath(".")
+
+	viper.AutomaticEnv()
+
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(fmt.Errorf("Fatal error config file: %w \n", err))
+	}
+
+	viper.OnConfigChange(func(e fsnotify.Event) {
+		fmt.Println("Config file changed:", e.Name)
+	})
+	viper.WatchConfig()
+}
+
 func main() {
-	_, ok := os.LookupEnv("JWT_KEY")
-	if !ok {
+	setupConfig()
+
+	jwtKey := viper.GetString("JWT_KEY")
+	if len(jwtKey) == 0 {
 		panic("JWT_KEY is not set")
 	}
 
