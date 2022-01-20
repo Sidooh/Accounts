@@ -20,7 +20,7 @@ type User struct {
 	Status          string       `json:"status"`
 	EmailVerifiedAt sqltime.Time `json:"-"`
 
-	Account account.Model
+	Account account.Model `json:"-"`
 }
 
 func CreateUser(u User) (User, error) {

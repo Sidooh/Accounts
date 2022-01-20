@@ -5,7 +5,7 @@ import (
 	"accounts.sidooh/models"
 	"database/sql"
 	"errors"
-	"gorm.io/gorm"
+	"fmt"
 	"gorm.io/gorm/clause"
 )
 
@@ -36,10 +36,9 @@ func All() ([]Model, error) {
 	return accounts, nil
 }
 
-func Create(conn *gorm.DB, a Model) (Model, error) {
-	if conn == nil {
-		conn = db.NewConnection()
-	}
+func Create(a Model) (Model, error) {
+	conn := db.NewConnection()
+
 	_, err := ByPhone(a.Phone)
 	if err == nil {
 		return Model{}, errors.New("phone is already taken")
@@ -47,6 +46,7 @@ func Create(conn *gorm.DB, a Model) (Model, error) {
 
 	result := conn.Omit(clause.Associations).Create(&a)
 	if result.Error != nil {
+		fmt.Println(result.Error)
 		return Model{}, errors.New("error creating account")
 	}
 

@@ -6,8 +6,9 @@ import (
 	"accounts.sidooh/routes"
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/spf13/viper"
 	"golang.org/x/net/http2"
-	"os"
 	"time"
 )
 
@@ -15,6 +16,7 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 	e := echo.New()
 	e.HideBanner = true
 
+	e.Use(middleware.Logger())
 	e.Validator = &middlewares.CustomValidator{Validator: validator.New()}
 
 	routes.RegisterCurrentUserHandler(e)
@@ -31,7 +33,7 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 		return echo.NewHTTPError(err.Status(), err.Errors())
 	})
 
-	port := os.Getenv("PORT")
+	port := viper.GetString("PORT")
 	if port == "" {
 		port = "3000"
 	}

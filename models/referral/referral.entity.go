@@ -5,8 +5,8 @@ import (
 	"accounts.sidooh/models"
 	"database/sql"
 	"errors"
-	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"time"
 )
 
 type Model struct {
@@ -34,9 +34,16 @@ func All() ([]Model, error) {
 	return referrals, nil
 }
 
-func Create(r Model, phone string) (Model, error) {
+func Create(r Model) (Model, error) {
+	if r.AccountID == 0 {
+		return Model{}, errors.New("AccountId is required")
+	}
+	if r.Status == "" {
+		r.Status = models.PENDING
+	}
+
 	conn := db.NewConnection()
-	_, err := ByPhone(nil, r.RefereePhone)
+	_, err := ByPhone(r.RefereePhone)
 
 	if err == nil {
 		return Model{}, errors.New("phone is already taken")
@@ -50,14 +57,17 @@ func Create(r Model, phone string) (Model, error) {
 	return r, nil
 }
 
-func ByPhone(conn *gorm.DB, phone string) (Model, error) {
-	if conn == nil {
-		conn = db.NewConnection()
-	}
-	return find(conn, "referee_phone = ?", phone)
+func ById(id uint) (Model, error) {
+	return find("id = ?", id)
 }
 
-func find(conn *gorm.DB, query interface{}, args interface{}) (Model, error) {
+func ByPhone(phone string) (Model, error) {
+	return find("referee_phone = ?", phone)
+}
+
+func find(query interface{}, args interface{}) (Model, error) {
+	conn := db.NewConnection()
+
 	referral := Model{}
 
 	result := conn.Where(query, args).First(&referral)
@@ -68,10 +78,20 @@ func find(conn *gorm.DB, query interface{}, args interface{}) (Model, error) {
 	return referral, nil
 }
 
-func (r *Model) Save(conn *gorm.DB) interface{} {
+func (r *Model) Save() interface{} {
+	conn := db.NewConnection()
 	return conn.Save(&r)
 }
 
-func removeExpired() {
-	//TODO: Remove expired referrals
+func RemoveExpired() error {
+	conn := db.NewConnection()
+
+	var expired []Model
+
+	conn.
+		Where("status", models.PENDING).
+		Where("created_at < ?", time.Now().Add(-48*time.Hour)).
+		Delete(&expired)
+
+	return nil
 }

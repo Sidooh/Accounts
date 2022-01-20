@@ -5,12 +5,12 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/spf13/viper"
 	"net/http"
-	"os"
 	"time"
 )
 
-var MySigningKey = []byte(os.Getenv("JWT_KEY"))
+var MySigningKey = []byte(viper.GetString("JWT_KEY"))
 
 type MyCustomClaims struct {
 	Id    uint   `json:"id"`

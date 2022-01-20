@@ -35,7 +35,7 @@ func RegisterReferralsHandler(e *echo.Echo) {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
 
-		referral, err := Referral.ByPhone(nil, phone)
+		referral, err := Referral.ByPhone(phone)
 		if err != nil {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
@@ -58,7 +58,7 @@ func RegisterReferralsHandler(e *echo.Echo) {
 
 		referral, err := Referral.Create(Referral.Model{
 			RefereePhone: phone,
-		}, phone)
+		})
 		if err != nil {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}

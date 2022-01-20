@@ -23,12 +23,12 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func createRandomAccount(t *testing.T, phone string) Model {
+func CreateRandomAccount(t *testing.T, phone string) Model {
 	arg := Model{
 		Phone: phone,
 	}
 
-	account, err := Create(nil, arg)
+	account, err := Create(arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, account)
 
@@ -41,8 +41,8 @@ func createRandomAccount(t *testing.T, phone string) Model {
 }
 
 func TestAll(t *testing.T) {
-	account1 := createRandomAccount(t, util.RandomPhone())
-	account2 := createRandomAccount(t, util.RandomPhone())
+	account1 := CreateRandomAccount(t, util.RandomPhone())
+	account2 := CreateRandomAccount(t, util.RandomPhone())
 
 	accounts, err := All()
 	require.NoError(t, err)
@@ -54,11 +54,11 @@ func TestAll(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-	createRandomAccount(t, util.RandomPhone())
+	CreateRandomAccount(t, util.RandomPhone())
 }
 
 func TestById(t *testing.T) {
-	account1 := createRandomAccount(t, util.RandomPhone())
+	account1 := CreateRandomAccount(t, util.RandomPhone())
 	account2, err := ById(account1.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, account2)
@@ -72,7 +72,7 @@ func TestById(t *testing.T) {
 }
 
 func TestByPhone(t *testing.T) {
-	account1 := createRandomAccount(t, util.RandomPhone())
+	account1 := CreateRandomAccount(t, util.RandomPhone())
 	account2, err := ByPhone(account1.Phone)
 	require.NoError(t, err)
 	require.NotEmpty(t, account2)

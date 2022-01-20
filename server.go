@@ -4,8 +4,11 @@ import (
 	"accounts.sidooh/server"
 	"fmt"
 	"github.com/fsnotify/fsnotify"
+	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
 )
+
+var echoServer = new(echo.Echo)
 
 func setupConfig() {
 	viper.SetConfigName(".env")
@@ -21,6 +24,19 @@ func setupConfig() {
 
 	viper.OnConfigChange(func(e fsnotify.Event) {
 		fmt.Println("Config file changed:", e.Name)
+
+		//TODO: On config change restart server
+		//fmt.Println("Shutdown server:", e.Name)
+		//ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		//defer cancel()
+		//if err := echoServer.Shutdown(ctx); err != nil {
+		//	echoServer.Logger.Fatal(err)
+		//} else {
+		//	fmt.Println("Restarting server:", e.Name)
+		//
+		//	echoServer, port, s := server.Setup()
+		//	echoServer.Logger.Fatal(echoServer.StartH2CServer(":"+port, s))
+		//}
 	})
 	viper.WatchConfig()
 }
@@ -33,7 +49,7 @@ func main() {
 		panic("JWT_KEY is not set")
 	}
 
-	e, port, s := server.Setup()
+	echoServer, port, s := server.Setup()
 
-	e.Logger.Fatal(e.StartH2CServer(":"+port, s))
+	echoServer.Logger.Fatal(echoServer.StartH2CServer(":"+port, s))
 }
