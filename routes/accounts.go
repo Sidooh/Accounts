@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"accounts.sidooh/db"
 	"accounts.sidooh/errors"
 	"accounts.sidooh/middlewares"
 	Account "accounts.sidooh/models/account"
@@ -18,7 +19,8 @@ type CreateAccountRequest struct {
 func RegisterAccountsHandler(e *echo.Echo) {
 	e.GET("/api/accounts", func(context echo.Context) error {
 
-		accounts, err := Account.All()
+		datastore := db.NewConnection()
+		accounts, err := Account.All(datastore)
 		if err != nil {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
@@ -34,7 +36,8 @@ func RegisterAccountsHandler(e *echo.Echo) {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
 
-		account, err := Account.ById(uint(id))
+		datastore := db.NewConnection()
+		account, err := Account.ById(datastore, uint(id))
 		if err != nil {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}

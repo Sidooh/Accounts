@@ -24,7 +24,7 @@ type User struct {
 }
 
 func CreateUser(u User) (User, error) {
-	conn := db.NewConnection()
+	conn := db.NewConnection().Conn
 	_, err := FindUserByEmail(u.Email)
 
 	if err == nil {
@@ -66,7 +66,7 @@ func FindUserByEmail(email string) (User, error) {
 }
 
 func findUser(query interface{}, args interface{}) (User, error) {
-	conn := db.NewConnection()
+	conn := db.NewConnection().Conn
 
 	user := User{}
 

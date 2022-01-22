@@ -13,12 +13,14 @@ import (
 	"time"
 )
 
+var datastore = new(db.DB)
+
 func TestMain(m *testing.M) {
 	viper.Set("APP_ENV", "TEST")
 
-	conn := db.NewConnection()
+	datastore = db.NewConnection()
 
-	err := conn.AutoMigrate(&Model{}, &Account.Model{})
+	err := datastore.Conn.AutoMigrate(&Model{}, &Account.Model{})
 	if err != nil {
 		panic(err)
 	}
@@ -27,7 +29,7 @@ func TestMain(m *testing.M) {
 }
 
 func createRandomReferral(t *testing.T, phone string) Model {
-	account, err := Account.Create(Account.Model{
+	account, err := Account.Create(datastore, Account.Model{
 		Phone: util.RandomPhone(),
 	})
 	require.NoError(t, err)
@@ -37,7 +39,7 @@ func createRandomReferral(t *testing.T, phone string) Model {
 		RefereePhone: phone,
 	}
 
-	referral, err := Create(arg)
+	referral, err := Create(datastore, arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, referral)
 
@@ -53,7 +55,7 @@ func createRandomReferral(t *testing.T, phone string) Model {
 
 func refreshDatabase() {
 	//Start clean slate
-	conn := db.NewConnection()
+	conn := db.NewConnection().Conn
 	conn.Where("1 = 1").Delete(&Model{})
 }
 
@@ -63,7 +65,7 @@ func TestAll(t *testing.T) {
 	referral1 := createRandomReferral(t, util.RandomPhone())
 	referral2 := createRandomReferral(t, util.RandomPhone())
 
-	referrals, err := All()
+	referrals, err := All(datastore)
 	require.NoError(t, err)
 	require.NotEmpty(t, referrals)
 	require.Equal(t, len(referrals), 2)
@@ -114,7 +116,7 @@ func TestRemoveExpired(t *testing.T) {
 	// pending and time-expired <- to be removed
 	activeReferral := createRandomReferral(t, util.RandomPhone())
 	activeReferral.Status = models.ACTIVE
-	activeReferral.Save()
+	activeReferral.Save(datastore)
 	require.NotEmpty(t, activeReferral)
 
 	pendingReferral := createRandomReferral(t, util.RandomPhone())
@@ -124,13 +126,13 @@ func TestRemoveExpired(t *testing.T) {
 	timeExpiredReferral.CreatedAt = sqltime.Time{
 		Time: time.Now().Add(-48 * time.Hour),
 	}
-	timeExpiredReferral.Save()
+	timeExpiredReferral.Save(datastore)
 	require.NotEmpty(t, timeExpiredReferral)
 
-	err := RemoveExpired()
+	err := RemoveExpired(datastore)
 	require.NoError(t, err)
 
-	referrals, err := All()
+	referrals, err := All(datastore)
 	require.NoError(t, err)
 	require.NotEmpty(t, referrals)
 	require.Equal(t, len(referrals), 2)

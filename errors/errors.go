@@ -34,19 +34,19 @@ func (d NotFoundError) Error() string {
 }
 
 func (d ValidationError) Error() string {
-	panic("Validation Error: " + d.Error())
+	panic("Validation Error")
 }
 
 func (d DatabaseConnectionError) Error() string {
-	panic("DB Conn Error: " + d.Error())
+	panic("DB Conn Error")
 }
 
 func (d BadRequestError) Error() string {
-	panic("Bad Request Error: " + d.Error())
+	panic("Bad Request Error")
 }
 
 func (d NotAuthorizedError) Error() string {
-	panic("Not Authorized Error: " + d.Error())
+	panic("Not Authorized Error")
 }
 
 func (d RequestValidationErrors) Status() int {

@@ -15,7 +15,7 @@ type Model struct {
 	Phone      string         `json:"phone"`
 	Active     bool           `json:"active"`
 	Pin        sql.NullString `json:"-"`
-	TelcoID    int            `json:"telco_id"`
+	TelcoID    int            `json:"-"`
 	ReferrerID sql.NullInt32  `json:"-"`
 	UserID     sql.NullInt32  `json:"-"`
 }
@@ -24,11 +24,9 @@ func (Model) TableName() string {
 	return "accounts"
 }
 
-func All() ([]Model, error) {
-	conn := db.NewConnection()
-
+func All(db *db.DB) ([]Model, error) {
 	var accounts []Model
-	result := conn.Find(&accounts)
+	result := db.Conn.Find(&accounts)
 	if result.Error != nil {
 		return accounts, result.Error
 	}
@@ -36,15 +34,13 @@ func All() ([]Model, error) {
 	return accounts, nil
 }
 
-func Create(a Model) (Model, error) {
-	conn := db.NewConnection()
-
-	_, err := ByPhone(a.Phone)
+func Create(db *db.DB, a Model) (Model, error) {
+	_, err := ByPhone(db, a.Phone)
 	if err == nil {
 		return Model{}, errors.New("phone is already taken")
 	}
 
-	result := conn.Omit(clause.Associations).Create(&a)
+	result := db.Conn.Omit(clause.Associations).Create(&a)
 	if result.Error != nil {
 		fmt.Println(result.Error)
 		return Model{}, errors.New("error creating account")
@@ -53,20 +49,18 @@ func Create(a Model) (Model, error) {
 	return a, nil
 }
 
-func ById(id uint) (Model, error) {
-	return find("id = ?", id)
+func ById(db *db.DB, id uint) (Model, error) {
+	return find(db, "id = ?", id)
 }
 
-func ByPhone(phone string) (Model, error) {
-	return find("phone = ?", phone)
+func ByPhone(db *db.DB, phone string) (Model, error) {
+	return find(db, "phone = ?", phone)
 }
 
-func find(query interface{}, args interface{}) (Model, error) {
-	conn := db.NewConnection()
-
+func find(db *db.DB, query interface{}, args interface{}) (Model, error) {
 	account := Model{}
 
-	result := conn.Where(query, args).First(&account)
+	result := db.Conn.Where(query, args).First(&account)
 	if result.Error != nil {
 		return account, result.Error
 	}

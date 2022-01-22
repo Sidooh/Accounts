@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"accounts.sidooh/db"
 	Account "accounts.sidooh/models/account"
 	Referral "accounts.sidooh/models/referral"
 	"database/sql"
@@ -8,8 +9,10 @@ import (
 )
 
 func Create(a Account.Model) (Account.Model, error) {
+	datastore := db.NewConnection()
+
 	//	Get Referral if exists
-	referral, err := Referral.ByPhone(a.Phone)
+	referral, err := Referral.UnexpiredByPhone(datastore, a.Phone)
 	if err != nil {
 		fmt.Println("Referral not found for", a.Phone)
 	} else {
@@ -20,7 +23,7 @@ func Create(a Account.Model) (Account.Model, error) {
 	}
 
 	//	Create Account
-	account, err := Account.Create(a)
+	account, err := Account.Create(datastore, a)
 	if err != nil {
 		return a, err
 	}
@@ -33,7 +36,7 @@ func Create(a Account.Model) (Account.Model, error) {
 			Valid: true,
 		}
 		referral.Status = "active"
-		referral.Save()
+		referral.Save(datastore)
 	}
 
 	return account, nil

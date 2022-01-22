@@ -25,3 +25,4 @@ gen
 
 # Sql test databases
 **/test.db
+.env

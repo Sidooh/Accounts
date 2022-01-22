@@ -17,6 +17,8 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 	e.HideBanner = true
 
 	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+
 	e.Validator = &middlewares.CustomValidator{Validator: validator.New()}
 
 	routes.RegisterCurrentUserHandler(e)

@@ -9,9 +9,12 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func NewConnection() *gorm.DB {
-	dsn := viper.GetString("DB_DSN")
+type DB struct {
+	Conn *gorm.DB
+}
 
+func NewConnection() *DB {
+	dsn := viper.GetString("DB_DSN")
 	env := viper.GetString("APP_ENV")
 
 	var db = new(gorm.DB)
@@ -36,5 +39,9 @@ func NewConnection() *gorm.DB {
 		panic(err)
 	}
 
-	return db
+	//ctx, cancel := context.WithTimeout(context.Background(), 60*time.Minute)
+	//defer cancel()
+
+	return &DB{Conn: db}
+
 }

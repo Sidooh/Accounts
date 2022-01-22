@@ -5,7 +5,6 @@ import (
 	"accounts.sidooh/models"
 	"database/sql"
 	"errors"
-	"gorm.io/gorm/clause"
 	"time"
 )
 
@@ -22,11 +21,9 @@ func (Model) TableName() string {
 	return "referrals"
 }
 
-func All() ([]Model, error) {
-	conn := db.NewConnection()
-
+func All(db *db.DB) ([]Model, error) {
 	var referrals []Model
-	result := conn.Find(&referrals)
+	result := db.Conn.Find(&referrals)
 	if result.Error != nil {
 		return referrals, result.Error
 	}
@@ -34,7 +31,7 @@ func All() ([]Model, error) {
 	return referrals, nil
 }
 
-func Create(r Model) (Model, error) {
+func Create(db *db.DB, r Model) (Model, error) {
 	if r.AccountID == 0 {
 		return Model{}, errors.New("AccountId is required")
 	}
@@ -42,14 +39,12 @@ func Create(r Model) (Model, error) {
 		r.Status = models.PENDING
 	}
 
-	conn := db.NewConnection()
 	_, err := ByPhone(r.RefereePhone)
-
 	if err == nil {
 		return Model{}, errors.New("phone is already taken")
 	}
 
-	result := conn.Omit(clause.Associations).Create(&r)
+	result := db.Conn.Create(&r)
 	if result.Error != nil {
 		return Model{}, errors.New("error creating referral")
 	}
@@ -65,8 +60,24 @@ func ByPhone(phone string) (Model, error) {
 	return find("referee_phone = ?", phone)
 }
 
-func find(query interface{}, args interface{}) (Model, error) {
-	conn := db.NewConnection()
+func UnexpiredByPhone(db *db.DB, phone string) (Model, error) {
+	referral := Model{}
+
+	result := db.Conn.
+		Where("referee_phone", phone).
+		Where("status", models.PENDING).
+		Where("created_at > ?", time.Now().Add(-48*time.Hour)).
+		First(&referral)
+
+	if result.Error != nil {
+		return referral, result.Error
+	}
+
+	return referral, nil
+}
+
+func find(query interface{}, args ...interface{}) (Model, error) {
+	conn := db.NewConnection().Conn
 
 	referral := Model{}
 
@@ -78,17 +89,14 @@ func find(query interface{}, args interface{}) (Model, error) {
 	return referral, nil
 }
 
-func (r *Model) Save() interface{} {
-	conn := db.NewConnection()
-	return conn.Save(&r)
+func (r *Model) Save(db *db.DB) interface{} {
+	return db.Conn.Save(&r)
 }
 
-func RemoveExpired() error {
-	conn := db.NewConnection()
-
+func RemoveExpired(db *db.DB) error {
 	var expired []Model
 
-	conn.
+	db.Conn.
 		Where("status", models.PENDING).
 		Where("created_at < ?", time.Now().Add(-48*time.Hour)).
 		Delete(&expired)
