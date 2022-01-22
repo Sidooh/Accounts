@@ -2,9 +2,9 @@ package referral
 
 import (
 	"accounts.sidooh/db"
-	"accounts.sidooh/models"
 	Account "accounts.sidooh/models/account"
 	"accounts.sidooh/util"
+	"accounts.sidooh/util/constants"
 	"github.com/SamuelTissot/sqltime"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
@@ -45,7 +45,7 @@ func createRandomReferral(t *testing.T, phone string) Model {
 
 	require.Equal(t, arg.AccountID, account.ID)
 	require.Equal(t, arg.RefereePhone, referral.RefereePhone)
-	require.Equal(t, models.PENDING, referral.Status)
+	require.Equal(t, constants.PENDING, referral.Status)
 
 	require.NotZero(t, referral.ID)
 	require.NotZero(t, referral.CreatedAt)
@@ -106,6 +106,49 @@ func TestByPhone(t *testing.T) {
 	require.WithinDuration(t, referral1.CreatedAt.Time, referral2.CreatedAt.Time, time.Second)
 }
 
+func TestUnexpiredByPhone(t *testing.T) {
+	//Start clean slate
+	refreshDatabase()
+
+	// Scenario 1 - active status
+	phone := util.RandomPhone()
+
+	activeReferral := createRandomReferral(t, phone)
+	activeReferral.Status = constants.ACTIVE
+	activeReferral.Save(datastore)
+	require.NotEmpty(t, activeReferral)
+
+	referral, err := UnexpiredByPhone(datastore, phone)
+	require.Error(t, err)
+	require.Empty(t, referral)
+
+	// Scenario 2 - pending status
+	phone = util.RandomPhone()
+
+	pendingReferral := createRandomReferral(t, phone)
+	require.NotEmpty(t, pendingReferral)
+
+	referral, err = UnexpiredByPhone(datastore, phone)
+	require.NoError(t, err)
+	require.NotEmpty(t, referral)
+
+	require.Equal(t, referral, pendingReferral)
+
+	// Scenario 3 - time has passed
+	phone = util.RandomPhone()
+
+	timeExpiredReferral := createRandomReferral(t, phone)
+	timeExpiredReferral.CreatedAt = sqltime.Time{
+		Time: time.Now().Add(-48 * time.Hour),
+	}
+	timeExpiredReferral.Save(datastore)
+	require.NotEmpty(t, timeExpiredReferral)
+
+	referral, err = UnexpiredByPhone(datastore, phone)
+	require.Error(t, err)
+	require.Empty(t, referral)
+}
+
 func TestRemoveExpired(t *testing.T) {
 	//Start clean slate
 	refreshDatabase()
@@ -115,7 +158,7 @@ func TestRemoveExpired(t *testing.T) {
 	// pending but non time-expired referral
 	// pending and time-expired <- to be removed
 	activeReferral := createRandomReferral(t, util.RandomPhone())
-	activeReferral.Status = models.ACTIVE
+	activeReferral.Status = constants.ACTIVE
 	activeReferral.Save(datastore)
 	require.NotEmpty(t, activeReferral)
 

@@ -1,4 +1,4 @@
-package models
+package constants
 
 const PENDING = "PENDING"
 const ACTIVE = "ACTIVE"

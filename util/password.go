@@ -1,45 +1,33 @@
 package util
 
 import (
-	"golang.org/x/crypto/bcrypt"
+	"crypto/rand"
+	"encoding/hex"
+	"fmt"
+	"golang.org/x/crypto/argon2"
+	"strings"
 )
 
 func ToHash(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 10)
+	salt := make([]byte, 8)
+	_, err := rand.Read(salt)
+	if err != nil {
+		return "", err
+	}
 
-	return string(bytes), err
+	buf := argon2.IDKey([]byte(password), salt, 2, 32*1024, 1, 64)
+
+	return fmt.Sprintf("%v.%v", hex.EncodeToString(buf), hex.EncodeToString(salt)), nil
 }
 
 func Compare(storedPassword string, suppliedPassword string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(storedPassword), []byte(suppliedPassword))
+	split := strings.Split(storedPassword, ".")
+	if len(split) < 2 {
+		return false
+	}
 
-	return err == nil
+	salt, _ := hex.DecodeString(split[1])
+	buf := argon2.IDKey([]byte(suppliedPassword), salt, 2, 32*1024, 1, 64)
+
+	return hex.EncodeToString(buf) == split[0]
 }
-
-//func ToHash(password string) (string, error) {
-//	salt := make([]byte, 8)
-//	_, err := rand.Read(salt)
-//	if err != nil {
-//		return "", err
-//	}
-//
-//	buf, err := scrypt.Key([]byte(password), salt, 32768, 12, 1, 64)
-//	if err != nil {
-//		return "", err
-//	}
-//
-//	return fmt.Sprintf("%v.%v", hex.EncodeToString(buf), hex.EncodeToString(salt)), nil
-//}
-//
-//
-//func Compare(storedPassword string, suppliedPassword string) bool {
-//	split := strings.Split(storedPassword, ".")
-//
-//	salt, _ := hex.DecodeString(split[1])
-//	buf, err := scrypt.Key([]byte(suppliedPassword), salt, 32768, 12, 1, 64)
-//	if err != nil {
-//		return false
-//	}
-//
-//	return hex.EncodeToString(buf) == split[0]
-//}

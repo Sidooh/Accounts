@@ -9,7 +9,7 @@ import (
 //var echoServer = new(echo.Echo)
 
 func setupConfig() {
-	viper.SetConfigName(".env.example")
+	viper.SetConfigName(".env")
 	viper.SetConfigType("env")
 	viper.AddConfigPath(".")
 

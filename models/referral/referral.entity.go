@@ -3,6 +3,7 @@ package referral
 import (
 	"accounts.sidooh/db"
 	"accounts.sidooh/models"
+	"accounts.sidooh/util/constants"
 	"database/sql"
 	"errors"
 	"time"
@@ -36,7 +37,7 @@ func Create(db *db.DB, r Model) (Model, error) {
 		return Model{}, errors.New("AccountId is required")
 	}
 	if r.Status == "" {
-		r.Status = models.PENDING
+		r.Status = constants.PENDING
 	}
 
 	_, err := ByPhone(r.RefereePhone)
@@ -65,7 +66,7 @@ func UnexpiredByPhone(db *db.DB, phone string) (Model, error) {
 
 	result := db.Conn.
 		Where("referee_phone", phone).
-		Where("status", models.PENDING).
+		Where("status", constants.PENDING).
 		Where("created_at > ?", time.Now().Add(-48*time.Hour)).
 		First(&referral)
 
@@ -97,7 +98,7 @@ func RemoveExpired(db *db.DB) error {
 	var expired []Model
 
 	db.Conn.
-		Where("status", models.PENDING).
+		Where("status", constants.PENDING).
 		Where("created_at < ?", time.Now().Add(-48*time.Hour)).
 		Delete(&expired)
 

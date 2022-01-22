@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -66,4 +67,8 @@ func find(db *db.DB, query interface{}, args interface{}) (Model, error) {
 	}
 
 	return account, nil
+}
+
+func (a *Model) Save(db *db.DB) *gorm.DB {
+	return db.Conn.Save(&a)
 }

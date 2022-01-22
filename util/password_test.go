@@ -7,12 +7,12 @@ import (
 
 func TestHashing(t *testing.T) {
 	password := RandomString(6)
-	hashedPassword, err := ToHash(password)
+	hashedPassword, err := ToHashV3(password)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, hashedPassword)
 
-	isValidPassword := Compare(hashedPassword, password)
+	isValidPassword := CompareV3(hashedPassword, password)
 
 	require.True(t, isValidPassword)
 }

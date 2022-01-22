@@ -10,10 +10,15 @@ import (
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type CreateAccountRequest struct {
 	Phone string `json:"phone" form:"phone" validate:"required,numeric"`
+}
+
+type CheckPinRequest struct {
+	Pin string `json:"pin" form:"pin" validate:"required,numeric,min=4"`
 }
 
 func RegisterAccountsHandler(e *echo.Echo) {
@@ -68,5 +73,47 @@ func RegisterAccountsHandler(e *echo.Echo) {
 		}
 
 		return context.JSON(http.StatusOK, account)
+	})
+
+	e.POST("/api/accounts/:id/check-pin", func(context echo.Context) error {
+		request := new(CheckPinRequest)
+		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
+			return err
+		}
+
+		id, err := strconv.ParseUint(context.Param("id"), 10, 32)
+		if err != nil {
+			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+		}
+
+		err = repositories.CheckPin(uint(id), strings.TrimSpace(request.Pin))
+		if err != nil {
+			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+		}
+
+		return context.JSON(http.StatusOK, map[string]string{
+			"message": "ok",
+		})
+	})
+
+	e.POST("/api/accounts/:id/set-pin", func(context echo.Context) error {
+		request := new(CheckPinRequest)
+		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
+			return err
+		}
+
+		id, err := strconv.ParseUint(context.Param("id"), 10, 32)
+		if err != nil {
+			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+		}
+
+		err = repositories.SetPin(uint(id), strings.TrimSpace(request.Pin))
+		if err != nil {
+			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+		}
+
+		return context.JSON(http.StatusOK, map[string]string{
+			"message": "ok",
+		})
 	})
 }

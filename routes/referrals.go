@@ -11,8 +11,8 @@ import (
 )
 
 type CreateReferralRequest struct {
-	Phone        string `json:"phone" form:"phone" validate:"required,numeric"`
-	RefereePhone string `json:"referee_phone" form:"referee_phone" validate:"required,numeric"`
+	AccountId     uint   `json:"account_id" form:"account_id" validate:"required,numeric"`
+	ReferralPhone string `json:"referral_phone" form:"referral_phone" validate:"required,numeric"`
 }
 
 func RegisterReferralsHandler(e *echo.Echo) {
@@ -53,13 +53,19 @@ func RegisterReferralsHandler(e *echo.Echo) {
 			return err
 		}
 
-		phone, err := util.GetPhoneByCountry("KE", request.Phone)
+		phone, err := util.GetPhoneByCountry("KE", request.ReferralPhone)
 		if err != nil {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
 
+		//accountId, err := strconv.ParseUint(request.AccountId, 10, 32)
+		//if err != nil {
+		//	return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+		//}
+
 		datastore := db.NewConnection()
 		referral, err := Referral.Create(datastore, Referral.Model{
+			AccountID:    request.AccountId,
 			RefereePhone: phone,
 		})
 		if err != nil {
