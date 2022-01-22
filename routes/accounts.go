@@ -18,7 +18,7 @@ type CreateAccountRequest struct {
 }
 
 type CheckPinRequest struct {
-	Pin string `json:"pin" form:"pin" validate:"required,numeric,min=4"`
+	Pin string `json:"pin" form:"pin" validate:"required,numeric,min=4,max=4"`
 }
 
 func RegisterAccountsHandler(e *echo.Echo) {

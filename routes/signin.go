@@ -12,7 +12,7 @@ import (
 
 type SignInRequest struct {
 	Email    string `json:"email" form:"email" validate:"required,email"`
-	Password string `json:"password" form:"password" validate:"required"`
+	Password string `json:"password" form:"password" validate:"required,min=8,max=64"`
 }
 
 func RegisterSignInHandler(e *echo.Echo) {

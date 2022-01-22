@@ -51,7 +51,7 @@ func CheckPin(id uint, pin string) error {
 	//	Get Account
 	account, err := Account.ById(datastore, id)
 	if err != nil {
-		return errors.New("account not found")
+		return errors.New("invalid credentials")
 	}
 
 	//	Check Pin
@@ -66,7 +66,7 @@ func CheckPin(id uint, pin string) error {
 			}
 			return nil
 		} else {
-			return errors.New("pin is incorrect")
+			return errors.New("invalid credentials")
 		}
 	}
 
