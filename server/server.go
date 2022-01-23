@@ -10,8 +10,6 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/viper"
 	"golang.org/x/net/http2"
-	"os"
-	"path/filepath"
 	"time"
 )
 
@@ -20,12 +18,7 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 	e.HideBanner = true
 
 	// Todo: Move to GetLogFile helper
-	pwd, err := os.Getwd()
-	file := util.GetFile(filepath.Join(pwd, "/logs/", "server.log"))
-	if err != nil || file == nil {
-		// Handle error
-		panic("could not open file")
-	}
+	file := util.GetLogFile("server.log")
 
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Output: file,
@@ -35,7 +28,7 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 			`,"bytes_in":${bytes_in},"bytes_out":${bytes_out}}` + "\n",
 	}))
 	e.Use(middleware.Recover())
-	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(20)))
+	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(10)))
 	e.Use(middleware.Secure())
 	e.Use(middleware.Timeout())
 

@@ -3,6 +3,7 @@ package account
 import (
 	"accounts.sidooh/db"
 	"accounts.sidooh/util"
+	"database/sql"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	"os"
@@ -85,4 +86,18 @@ func TestByPhone(t *testing.T) {
 	require.Equal(t, account1.TelcoID, account2.TelcoID)
 
 	require.WithinDuration(t, account1.CreatedAt.Time, account2.CreatedAt.Time, time.Second)
+}
+
+func TestUpdate(t *testing.T) {
+	account := CreateRandomAccount(t, util.RandomPhone())
+	require.NotEmpty(t, account)
+
+	result := account.Update(datastore, "pin", "new_pin")
+	require.NoError(t, result.Error)
+
+	require.Equal(t, account.Pin, sql.NullString{String: "new_pin", Valid: true})
+	require.WithinDuration(t, account.UpdatedAt.Time, account.UpdatedAt.Time, time.Second)
+
+	result = account.Update(datastore, "pins", "new_pin")
+	require.Error(t, result.Error)
 }

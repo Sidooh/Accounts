@@ -72,3 +72,7 @@ func find(db *db.DB, query interface{}, args interface{}) (Model, error) {
 func (a *Model) Save(db *db.DB) *gorm.DB {
 	return db.Conn.Save(&a)
 }
+
+func (a *Model) Update(db *db.DB, column string, value string) *gorm.DB {
+	return db.Conn.Model(&a).Update(column, value)
+}

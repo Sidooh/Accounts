@@ -58,14 +58,14 @@ func AuthUser(u User) (User, error) {
 }
 
 func FindUserById(id uint) (User, error) {
-	return findUser("id = ?", id)
+	return find("id = ?", id)
 }
 
 func FindUserByEmail(email string) (User, error) {
-	return findUser("email = ?", email)
+	return find("email = ?", email)
 }
 
-func findUser(query interface{}, args interface{}) (User, error) {
+func find(query interface{}, args interface{}) (User, error) {
 	conn := db.NewConnection().Conn
 
 	user := User{}

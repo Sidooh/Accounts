@@ -11,9 +11,13 @@ import (
 	"fmt"
 )
 
-func Create(a Account.Model) (Account.Model, error) {
-	datastore := db.NewConnection()
+var datastore = new(db.DB)
 
+func Construct(db *db.DB) {
+	datastore = db
+}
+
+func Create(a Account.Model) (Account.Model, error) {
 	//	Get Referral if exists
 	referral, err := Referral.UnexpiredByPhone(datastore, a.Phone)
 	if err != nil {
@@ -46,8 +50,6 @@ func Create(a Account.Model) (Account.Model, error) {
 }
 
 func CheckPin(id uint, pin string) error {
-	datastore := db.NewConnection()
-
 	//	Get Account
 	account, err := Account.ById(datastore, id)
 	if err != nil {
@@ -79,8 +81,6 @@ func CheckPin(id uint, pin string) error {
 }
 
 func SetPin(id uint, pin string) error {
-	datastore := db.NewConnection()
-
 	//	Get Account
 	account, err := Account.ById(datastore, id)
 	if err != nil {
@@ -93,11 +93,7 @@ func SetPin(id uint, pin string) error {
 		return errors.New("unable to set pin")
 	}
 
-	account.Pin = sql.NullString{
-		String: hashedPin, Valid: true,
-	}
-
-	result := account.Save(datastore)
+	result := account.Update(datastore, "pin", hashedPin)
 	if result.Error != nil {
 		return errors.New("unable to set pin")
 	}

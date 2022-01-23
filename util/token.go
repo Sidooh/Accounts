@@ -7,10 +7,12 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/viper"
 	"net/http"
+	"strings"
 	"time"
 )
 
 var MySigningKey = []byte(viper.GetString("JWT_KEY"))
+var secureCookie = true
 
 type MyCustomClaims struct {
 	Id    uint   `json:"id"`
@@ -52,11 +54,17 @@ func GenerateToken(user MyCustomClaims) (string, error) {
 }
 
 func SetToken(signedString string, ctx echo.Context) {
+	env := strings.ToUpper(viper.GetString("APP_ENV"))
+
+	if env != "PRODUCTION" {
+		secureCookie = false
+	}
+
 	cookie := http.Cookie{
-		Name:    "jwt",
-		Value:   signedString,
-		Expires: time.Now().Add(15 * time.Minute),
-		//Secure:   true,
+		Name:     "jwt",
+		Value:    signedString,
+		Expires:  time.Now().Add(15 * time.Minute),
+		Secure:   secureCookie,
 		HttpOnly: true,
 		Path:     "/api",
 	}

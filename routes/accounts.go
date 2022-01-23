@@ -5,7 +5,7 @@ import (
 	"accounts.sidooh/errors"
 	"accounts.sidooh/middlewares"
 	Account "accounts.sidooh/models/account"
-	"accounts.sidooh/models/repositories"
+	"accounts.sidooh/repositories"
 	"accounts.sidooh/util"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -22,9 +22,11 @@ type CheckPinRequest struct {
 }
 
 func RegisterAccountsHandler(e *echo.Echo) {
+	datastore := db.NewConnection()
+	repositories.Construct(datastore)
+
 	e.GET("/api/accounts", func(context echo.Context) error {
 
-		datastore := db.NewConnection()
 		accounts, err := Account.All(datastore)
 		if err != nil {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
@@ -41,8 +43,23 @@ func RegisterAccountsHandler(e *echo.Echo) {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
 
-		datastore := db.NewConnection()
 		account, err := Account.ById(datastore, uint(id))
+		if err != nil {
+			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+		}
+
+		return context.JSON(http.StatusOK, account)
+
+	}, util.CustomJWTMiddleware)
+
+	e.GET("/api/accounts/phone/:phone", func(context echo.Context) error {
+
+		phone, err := util.GetPhoneByCountry("KE", context.Param("phone"))
+		if err != nil {
+			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+		}
+
+		account, err := Account.ByPhone(datastore, phone)
 		if err != nil {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
@@ -73,9 +90,11 @@ func RegisterAccountsHandler(e *echo.Echo) {
 		}
 
 		return context.JSON(http.StatusOK, account)
+
 	})
 
 	e.POST("/api/accounts/:id/check-pin", func(context echo.Context) error {
+
 		request := new(CheckPinRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err
@@ -94,7 +113,8 @@ func RegisterAccountsHandler(e *echo.Echo) {
 		return context.JSON(http.StatusOK, map[string]string{
 			"message": "ok",
 		})
-	})
+
+	}, util.CustomJWTMiddleware)
 
 	e.POST("/api/accounts/:id/set-pin", func(context echo.Context) error {
 		request := new(CheckPinRequest)
@@ -115,5 +135,5 @@ func RegisterAccountsHandler(e *echo.Echo) {
 		return context.JSON(http.StatusOK, map[string]string{
 			"message": "ok",
 		})
-	})
+	}, util.CustomJWTMiddleware)
 }

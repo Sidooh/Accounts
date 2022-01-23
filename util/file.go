@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
 func GetFile(path string) *os.File {
@@ -10,6 +11,18 @@ func GetFile(path string) *os.File {
 	if err != nil {
 		fmt.Println(err)
 		return nil
+	}
+
+	return file
+}
+
+func GetLogFile(filename string) *os.File {
+	pwd, err := os.Getwd()
+
+	file := GetFile(filepath.Join(pwd, "logs/", filename))
+	if err != nil || file == nil {
+		fmt.Println("could not open file")
+		file = os.Stdout
 	}
 
 	return file
