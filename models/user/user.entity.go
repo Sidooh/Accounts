@@ -5,8 +5,8 @@ import (
 	"accounts.sidooh/models"
 	"accounts.sidooh/models/account"
 	"accounts.sidooh/util"
+	"database/sql"
 	"errors"
-	"github.com/SamuelTissot/sqltime"
 )
 
 type User struct {
@@ -18,7 +18,7 @@ type User struct {
 	Username        string       `json:"username"`
 	IdNumber        string       `json:"id_number"`
 	Status          string       `json:"status"`
-	EmailVerifiedAt sqltime.Time `json:"-"`
+	EmailVerifiedAt sql.NullTime `json:"-"`
 
 	Account account.Model `json:"-"`
 }
