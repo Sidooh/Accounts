@@ -17,18 +17,26 @@ type DB struct {
 	Conn *gorm.DB
 }
 
+var db *DB
+
 func NewConnection() *DB {
+	return db
+}
+
+func Init() {
+	fmt.Println("==== Initializing DB ====")
+
 	dsn := viper.GetString("DB_DSN")
 	env := strings.ToUpper(viper.GetString("APP_ENV"))
 	if env != "TEST" && dsn == "" {
 		panic("database connection not set")
 	}
 
-	var db = new(gorm.DB)
+	var gormDb = new(gorm.DB)
 	var err = errors.New("")
 
 	if env == "TEST" {
-		db, err = gorm.Open(sqlite.Open("test.db"), &gorm.Config{
+		gormDb, err = gorm.Open(sqlite.Open("test.db"), &gorm.Config{
 			Logger: logger.Default.LogMode(logger.Silent),
 		})
 	} else {
@@ -45,7 +53,8 @@ func NewConnection() *DB {
 			Logger: newLogger,
 		}
 
-		db, err = gorm.Open(mysql.Open(dsn), config)
+		fmt.Println(dsn)
+		gormDb, err = gorm.Open(mysql.Open(dsn), config)
 	}
 
 	if err != nil {
@@ -53,5 +62,6 @@ func NewConnection() *DB {
 		panic("failed to connect database")
 	}
 
-	return &DB{Conn: db}
+	db = &DB{Conn: gormDb}
+	fmt.Println("Connected to Database")
 }

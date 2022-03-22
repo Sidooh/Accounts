@@ -15,7 +15,6 @@ FROM gcr.io/distroless/base-debian11
 
 COPY --from=build /server /server
 
-COPY .env.example .env
 # USER nonroot:nonroot
 # RUN echo $USER
 

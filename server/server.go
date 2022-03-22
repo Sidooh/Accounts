@@ -5,6 +5,7 @@ import (
 	"accounts.sidooh/middlewares"
 	"accounts.sidooh/routes"
 	"accounts.sidooh/util"
+	"fmt"
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -14,6 +15,8 @@ import (
 )
 
 func Setup() (*echo.Echo, string, *http2.Server) {
+	fmt.Println("==== Starting Server ====")
+
 	e := echo.New()
 	e.HideBanner = true
 

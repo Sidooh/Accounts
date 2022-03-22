@@ -21,7 +21,6 @@ func GetLogFile(filename string) *os.File {
 
 	file := GetFile(filepath.Join(pwd, "logs/", filename))
 	if err != nil || file == nil {
-		fmt.Println("could not open file")
 		file = os.Stdout
 	}
 
