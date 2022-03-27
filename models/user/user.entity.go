@@ -6,6 +6,7 @@ import (
 	"accounts.sidooh/models/account"
 	"accounts.sidooh/util"
 	"errors"
+	"fmt"
 	"github.com/SamuelTissot/sqltime"
 )
 
@@ -63,6 +64,24 @@ func FindUserById(id uint) (User, error) {
 
 func FindUserByEmail(email string) (User, error) {
 	return find("email = ?", email)
+}
+
+func SearchByEmail(email string) ([]User, error) {
+	//%%  a literal percent sign; consumes no value
+	return findAll("email LIKE ?", fmt.Sprintf("%%%s%%", email))
+}
+
+func findAll(query interface{}, args interface{}) ([]User, error) {
+	conn := db.NewConnection().Conn
+
+	var users []User
+
+	result := conn.Where(query, args).Find(&users)
+	if result.Error != nil {
+		return users, result.Error
+	}
+
+	return users, nil
 }
 
 func find(query interface{}, args interface{}) (User, error) {

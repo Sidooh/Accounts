@@ -24,13 +24,18 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+func createUser(arg User) (User, error) {
+	user, err := CreateUser(arg)
+	return user, err
+}
+
 func createRandomUser(t *testing.T, password string) User {
 	arg := User{
 		Email:    util.RandomEmail(),
 		Password: password,
 	}
 
-	user, err := CreateUser(arg)
+	user, err := createUser(arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, user)
 
@@ -38,6 +43,12 @@ func createRandomUser(t *testing.T, password string) User {
 	require.NotZero(t, user.CreatedAt)
 
 	return user
+}
+
+func refreshDatabase() {
+	//Start clean slate
+	conn := db.NewConnection().Conn
+	conn.Where("1 = 1").Delete(&User{})
 }
 
 func TestCreateUser(t *testing.T) {
@@ -87,4 +98,40 @@ func TestAuthUser(t *testing.T) {
 	require.Equal(t, user1.Email, user2.Email)
 	require.WithinDuration(t, user1.EmailVerifiedAt.Time, user2.EmailVerifiedAt.Time, time.Second)
 	require.WithinDuration(t, user1.CreatedAt.Time, user2.CreatedAt.Time, time.Second)
+}
+
+func TestSearchByEmail(t *testing.T) {
+	refreshDatabase()
+
+	password := util.RandomString(6)
+	arg := User{
+		Email:    "ab@a.a",
+		Password: password,
+	}
+	user1, err := createUser(arg)
+
+	arg = User{
+		Email:    "a@a.a",
+		Password: password,
+	}
+	user2, err := createUser(arg)
+
+	users, err := SearchByEmail("ab")
+	require.NoError(t, err)
+	require.NotEmpty(t, users)
+	require.Equal(t, 1, len(users))
+
+	require.Equal(t, users[0], user1)
+
+	users, err = SearchByEmail("a")
+	require.NoError(t, err)
+	require.NotEmpty(t, users)
+	require.Equal(t, 2, len(users))
+
+	require.Equal(t, users[1], user2)
+
+	users, err = SearchByEmail("c")
+	require.NoError(t, err)
+	require.Empty(t, users)
+
 }
