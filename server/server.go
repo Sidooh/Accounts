@@ -37,7 +37,9 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{AllowCredentials: true}))
 
 	rateLimiterRequests := viper.GetFloat64("RATE_LIMIT")
-	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(rate.Limit(rateLimiterRequests))))
+	if rateLimiterRequests > 1 {
+		e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(rate.Limit(rateLimiterRequests))))
+	}
 
 	e.Validator = &middlewares.CustomValidator{Validator: validator.New()}
 

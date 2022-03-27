@@ -13,6 +13,7 @@ import (
 func TestMain(m *testing.M) {
 	viper.Set("APP_ENV", "TEST")
 
+	db.Init()
 	conn := db.NewConnection().Conn
 
 	err := conn.AutoMigrate(&User{})

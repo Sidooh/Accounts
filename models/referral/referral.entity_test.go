@@ -18,6 +18,7 @@ var datastore = new(db.DB)
 func TestMain(m *testing.M) {
 	viper.Set("APP_ENV", "TEST")
 
+	db.Init()
 	datastore = db.NewConnection()
 
 	err := datastore.Conn.AutoMigrate(&Model{}, &Account.Model{})
