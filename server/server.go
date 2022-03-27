@@ -50,6 +50,7 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 
 	routes.RegisterAccountsHandler(e)
 	routes.RegisterReferralsHandler(e)
+	routes.RegisterUsersHandler(e)
 
 	e.Any("*", func(context echo.Context) error {
 		err := errors.NotFoundError{}
