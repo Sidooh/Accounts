@@ -53,7 +53,6 @@ func Init() {
 			Logger: newLogger,
 		}
 
-		fmt.Println(dsn)
 		gormDb, err = gorm.Open(mysql.Open(dsn), config)
 	}
 

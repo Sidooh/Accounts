@@ -16,6 +16,7 @@ var datastore = new(db.DB)
 func TestMain(m *testing.M) {
 	viper.Set("APP_ENV", "TEST")
 
+	db.Init()
 	datastore = db.NewConnection()
 
 	err := datastore.Conn.AutoMigrate(&Model{})
@@ -41,6 +42,12 @@ func CreateRandomAccount(t *testing.T, phone string) Model {
 	require.NotZero(t, account.CreatedAt)
 
 	return account
+}
+
+func refreshDatabase() {
+	//Start clean slate
+	conn := db.NewConnection().Conn
+	conn.Where("1 = 1").Delete(&Model{})
 }
 
 func TestAll(t *testing.T) {
@@ -100,4 +107,30 @@ func TestUpdate(t *testing.T) {
 
 	result = account.Update(datastore, "pins", "new_pin")
 	require.Error(t, result.Error)
+}
+
+func TestSearchByPhone(t *testing.T) {
+	refreshDatabase()
+
+	account1 := CreateRandomAccount(t, "714611696")
+	account2 := CreateRandomAccount(t, "780611696")
+
+	accounts, err := SearchByPhone(datastore, "714")
+	require.NoError(t, err)
+	require.NotEmpty(t, accounts)
+	require.Equal(t, 1, len(accounts))
+
+	require.Equal(t, accounts[0], account1)
+
+	accounts, err = SearchByPhone(datastore, "6116")
+	require.NoError(t, err)
+	require.NotEmpty(t, accounts)
+	require.Equal(t, 2, len(accounts))
+
+	require.Equal(t, accounts[1], account2)
+
+	accounts, err = SearchByPhone(datastore, "3")
+	require.NoError(t, err)
+	require.Empty(t, accounts)
+
 }

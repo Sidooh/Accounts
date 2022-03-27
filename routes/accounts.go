@@ -14,14 +14,19 @@ import (
 )
 
 type CreateAccountRequest struct {
-	Phone string `json:"phone" form:"phone" validate:"required,numeric"`
+	Phone string `json:"phone" validate:"required,numeric"`
 }
 
 type CheckPinRequest struct {
-	Pin string `json:"pin" form:"pin" validate:"required,numeric,min=4,max=4"`
+	Pin string `json:"pin" validate:"required,numeric,min=4,max=4"`
+}
+
+type SearchPhoneRequest struct {
+	Phone string `query:"phone" validate:"required,numeric,min=3,max=12"`
 }
 
 func RegisterAccountsHandler(e *echo.Echo) {
+	// TODO: Refactor these; move to repo. Repo should determine and setup datastore independently
 	datastore := db.NewConnection()
 	repositories.Construct(datastore)
 
@@ -135,5 +140,20 @@ func RegisterAccountsHandler(e *echo.Echo) {
 		return context.JSON(http.StatusOK, map[string]string{
 			"message": "ok",
 		})
+	}, util.CustomJWTMiddleware)
+
+	e.GET("/api/accounts/search", func(context echo.Context) error {
+		request := new(SearchPhoneRequest)
+		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
+			return err
+		}
+
+		accounts, err := Account.SearchByPhone(datastore, request.Phone)
+		if err != nil {
+			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+		}
+
+		return context.JSON(http.StatusOK, accounts)
+
 	}, util.CustomJWTMiddleware)
 }
