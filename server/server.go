@@ -11,6 +11,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/viper"
 	"golang.org/x/net/http2"
+	"golang.org/x/time/rate"
 	"time"
 )
 
@@ -31,9 +32,12 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 			`,"bytes_in":${bytes_in},"bytes_out":${bytes_out}}` + "\n",
 	}))
 	e.Use(middleware.Recover())
-	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(10)))
 	e.Use(middleware.Secure())
 	e.Use(middleware.Timeout())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{AllowCredentials: true}))
+
+	rateLimiterRequests := viper.GetFloat64("RATE_LIMIT")
+	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(rate.Limit(rateLimiterRequests))))
 
 	e.Validator = &middlewares.CustomValidator{Validator: validator.New()}
 
