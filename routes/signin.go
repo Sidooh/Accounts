@@ -15,6 +15,10 @@ type SignInRequest struct {
 	Password string `json:"password" form:"password" validate:"required,min=8,max=64"`
 }
 
+type SignInResponse struct {
+	Token string `json:"token"`
+}
+
 func RegisterSignInHandler(e *echo.Echo) {
 	e.POST("/api/users/signin", func(context echo.Context) error {
 
@@ -39,6 +43,6 @@ func RegisterSignInHandler(e *echo.Echo) {
 		token, _ := util.GenerateToken(tokenData)
 		util.SetToken(token, context)
 
-		return context.JSON(http.StatusOK, user)
+		return context.JSON(http.StatusOK, SignInResponse{Token: token})
 	})
 }
