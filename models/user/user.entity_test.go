@@ -51,6 +51,19 @@ func refreshDatabase() {
 	conn.Where("1 = 1").Delete(&User{})
 }
 
+func TestAll(t *testing.T) {
+	user1 := createRandomUser(t, util.RandomString(6))
+	user2 := createRandomUser(t, util.RandomString(6))
+
+	users, err := All()
+	require.NoError(t, err)
+	require.NotEmpty(t, users)
+	require.GreaterOrEqual(t, len(users), 2)
+
+	require.Equal(t, users[len(users)-2], user1)
+	require.Equal(t, users[len(users)-1], user2)
+}
+
 func TestCreateUser(t *testing.T) {
 	createRandomUser(t, util.RandomString(6))
 }

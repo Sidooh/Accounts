@@ -15,6 +15,17 @@ type SearchEmailRequest struct {
 
 func RegisterUsersHandler(e *echo.Echo) {
 
+	e.GET("/api/users", func(context echo.Context) error {
+
+		users, err := User.All()
+		if err != nil {
+			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+		}
+
+		return context.JSON(http.StatusOK, users)
+
+	}, util.CustomJWTMiddleware)
+
 	e.GET("/api/users/search", func(context echo.Context) error {
 		request := new(SearchEmailRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {

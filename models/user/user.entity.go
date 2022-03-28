@@ -24,6 +24,18 @@ type User struct {
 	Account account.Model `json:"-"`
 }
 
+func All() ([]User, error) {
+	conn := db.NewConnection().Conn
+
+	var users []User
+	result := conn.Find(&users)
+	if result.Error != nil {
+		return users, result.Error
+	}
+
+	return users, nil
+}
+
 func CreateUser(u User) (User, error) {
 	conn := db.NewConnection().Conn
 	_, err := FindUserByEmail(u.Email)
