@@ -23,7 +23,7 @@ type MyCustomClaims struct {
 
 var CustomJWTMiddleware = middleware.JWTWithConfig(middleware.JWTConfig{
 	SigningKey:  MySigningKey,
-	TokenLookup: "cookie:jwt",
+	TokenLookup: "cookie:jwt,header:Authorization",
 	Claims:      &MyCustomClaims{},
 	ErrorHandlerWithContext: func(err error, context echo.Context) error {
 		unAuth := errors.NotAuthorizedError{Message: "Not Authorized"}
