@@ -8,6 +8,7 @@ import (
 	"accounts.sidooh/repositories"
 	"accounts.sidooh/util"
 	"github.com/labstack/echo/v4"
+	"github.com/spf13/viper"
 	"net/http"
 	"strconv"
 	"strings"
@@ -23,6 +24,11 @@ type CheckPinRequest struct {
 
 type SearchPhoneRequest struct {
 	Phone string `query:"phone" validate:"required,numeric,min=3,max=12"`
+}
+
+type AncestorsOrDescendantRequest struct {
+	Id         string `param:"id" validate:"required,numeric,min=1"`
+	LevelLimit string `query:"level_limit" validate:"omitempty,number,min=1,max=5"`
 }
 
 func RegisterAccountsHandler(e *echo.Echo) {
@@ -154,6 +160,69 @@ func RegisterAccountsHandler(e *echo.Echo) {
 		}
 
 		return context.JSON(http.StatusOK, accounts)
+
+	}, util.CustomJWTMiddleware)
+
+	e.GET("/api/accounts/:id/ancestors", func(context echo.Context) error {
+		request := new(AncestorsOrDescendantRequest)
+		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
+			return err
+		}
+
+		id, err := strconv.ParseUint(request.Id, 10, 32)
+		if err != nil {
+			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+		}
+
+		levelLimit := viper.GetUint64("INVITE_LEVEL_LIMIT")
+
+		if request.LevelLimit != "" {
+			requestLevelLimit, err := strconv.ParseUint(request.LevelLimit, 10, 8)
+			if err != nil {
+				return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			}
+			if requestLevelLimit < levelLimit {
+				levelLimit = requestLevelLimit
+			}
+		}
+
+		account, err := Account.Ancestors(uint(id), uint(levelLimit+1))
+		if err != nil {
+			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+		}
+
+		return context.JSON(http.StatusOK, account)
+
+	}, util.CustomJWTMiddleware)
+
+	e.GET("/api/accounts/:id/descendants", func(context echo.Context) error {
+		request := new(AncestorsOrDescendantRequest)
+		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
+			return err
+		}
+
+		id, err := strconv.ParseUint(request.Id, 10, 32)
+		if err != nil {
+			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+		}
+
+		levelLimit := viper.GetUint64("INVITE_LEVEL_LIMIT")
+		if request.LevelLimit != "" {
+			requestLevelLimit, err := strconv.ParseUint(request.LevelLimit, 10, 8)
+			if err != nil {
+				return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			}
+			if requestLevelLimit < levelLimit {
+				levelLimit = requestLevelLimit
+			}
+		}
+
+		account, err := Account.Descendants(uint(id), uint(levelLimit+1))
+		if err != nil {
+			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+		}
+
+		return context.JSON(http.StatusOK, account)
 
 	}, util.CustomJWTMiddleware)
 }

@@ -16,6 +16,8 @@ import (
 var datastore = new(db.DB)
 
 func TestMain(m *testing.M) {
+	util.SetupConfig("../../")
+
 	viper.Set("APP_ENV", "TEST")
 
 	db.Init()
@@ -150,7 +152,7 @@ func TestUnexpiredByPhone(t *testing.T) {
 	require.Empty(t, referral)
 }
 
-func TestRemoveExpired(t *testing.T) {
+func TestMarkExpired(t *testing.T) {
 	//Start clean slate
 	refreshDatabase()
 
@@ -173,10 +175,10 @@ func TestRemoveExpired(t *testing.T) {
 	timeExpiredReferral.Save(datastore)
 	require.NotEmpty(t, timeExpiredReferral)
 
-	err := RemoveExpired(datastore)
+	err := MarkExpired(datastore)
 	require.NoError(t, err)
 
-	referrals, err := All(datastore)
+	referrals, err := Unexpired(datastore)
 	require.NoError(t, err)
 	require.NotEmpty(t, referrals)
 	require.Equal(t, len(referrals), 2)

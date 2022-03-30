@@ -21,6 +21,12 @@ type Model struct {
 	UserID     sql.NullInt32  `json:"-"`
 }
 
+type InviteModel struct {
+	Model
+
+	Level int `json:"level"`
+}
+
 func (Model) TableName() string {
 	return "accounts"
 }
@@ -91,4 +97,53 @@ func (a *Model) Save(db *db.DB) *gorm.DB {
 
 func (a *Model) Update(db *db.DB, column string, value string) *gorm.DB {
 	return db.Conn.Model(&a).Update(column, value)
+}
+
+// Referral/Invite Queries
+
+// Ancestors 1. Get ancestors
+func Ancestors(id uint, levelLimit uint) ([]InviteModel, error) {
+	conn := db.NewConnection().Conn
+
+	var accounts []InviteModel
+	conn.Raw(
+		"WITH RECURSIVE ancestors (id, phone, referrer_id, level) AS\n"+
+			"("+
+			"SELECT id, phone, referrer_id, 0 level\n"+
+			"FROM accounts\n"+
+			"WHERE id = ?\n"+
+			"UNION ALL\n"+
+			"SELECT a.id, a.phone, a.referrer_id, an.level+1\n"+
+			"FROM ancestors AS an JOIN accounts AS a\n"+
+			"ON an.referrer_id = a.id"+
+			")\n"+
+			"SELECT * FROM ancestors LIMIT ?",
+		id, levelLimit).
+		Scan(&accounts)
+
+	return accounts, nil
+}
+
+// Descendants 2. Get descendants
+func Descendants(id uint, levelLimit uint) ([]InviteModel, error) {
+	conn := db.NewConnection().Conn
+
+	var accounts []InviteModel
+
+	conn.Raw(
+		"WITH RECURSIVE descendants (id, phone, referrer_id, level) AS\n"+
+			"("+
+			"SELECT id, phone, referrer_id, 0 level\n"+
+			"FROM accounts\n"+
+			"WHERE id = ?\n"+
+			"UNION ALL\n"+
+			"SELECT a.id, a.phone, a.referrer_id, d.level+1\n"+
+			"FROM descendants AS d JOIN accounts AS a\n"+
+			"ON d.id = a.referrer_id"+
+			")\n"+
+			"SELECT * FROM descendants WHERE level < ?",
+		id, levelLimit).
+		Scan(&accounts)
+
+	return accounts, nil
 }

@@ -6,6 +6,7 @@ import (
 	"accounts.sidooh/util/constants"
 	"database/sql"
 	"errors"
+	"github.com/spf13/viper"
 	"time"
 )
 
@@ -21,6 +22,9 @@ type Model struct {
 func (Model) TableName() string {
 	return "referrals"
 }
+
+//TODO: Move the defaults to Config struct and remove from file
+var expiryTime = time.Duration(viper.GetFloat64("INVITE_EXPIRY")) * time.Hour
 
 func All(db *db.DB) ([]Model, error) {
 	var referrals []Model
@@ -62,12 +66,15 @@ func ByPhone(phone string) (Model, error) {
 }
 
 func UnexpiredByPhone(db *db.DB, phone string) (Model, error) {
+	//TODO: Move the defaults to Config struct and remove from file
+	expiryTime = time.Duration(viper.GetFloat64("INVITE_EXPIRY")) * time.Hour
+
 	referral := Model{}
 
 	result := db.Conn.
 		Where("referee_phone", phone).
 		Where("status", constants.PENDING).
-		Where("created_at > ?", time.Now().Add(-48*time.Hour)).
+		Where("created_at > ?", time.Now().Add(-expiryTime)).
 		First(&referral)
 
 	if result.Error != nil {
@@ -75,6 +82,20 @@ func UnexpiredByPhone(db *db.DB, phone string) (Model, error) {
 	}
 
 	return referral, nil
+}
+
+func Unexpired(db *db.DB) ([]Model, error) {
+	var referrals []Model
+
+	result := db.Conn.
+		Where("status <> ?", constants.EXPIRED).
+		Find(&referrals)
+
+	if result.Error != nil {
+		return referrals, result.Error
+	}
+
+	return referrals, nil
 }
 
 func find(query interface{}, args ...interface{}) (Model, error) {
@@ -94,13 +115,14 @@ func (r *Model) Save(db *db.DB) interface{} {
 	return db.Conn.Save(&r)
 }
 
-func RemoveExpired(db *db.DB) error {
-	var expired []Model
+func MarkExpired(db *db.DB) error {
+	expiryTime = time.Duration(viper.GetFloat64("INVITE_EXPIRY")) * time.Hour
 
 	db.Conn.
+		Model(&Model{}).
 		Where("status", constants.PENDING).
-		Where("created_at < ?", time.Now().Add(-48*time.Hour)).
-		Delete(&expired)
+		Where("created_at < ?", time.Now().Add(-expiryTime)).
+		Update("status", constants.EXPIRED)
 
 	return nil
 }
