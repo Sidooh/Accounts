@@ -3,7 +3,6 @@ package user
 import (
 	"accounts.sidooh/db"
 	"accounts.sidooh/models"
-	"accounts.sidooh/models/account"
 	"accounts.sidooh/util"
 	"errors"
 	"fmt"
@@ -20,8 +19,6 @@ type User struct {
 	IdNumber        string       `json:"id_number"`
 	Status          string       `json:"status"`
 	EmailVerifiedAt sqltime.Time `json:"-"`
-
-	Account account.Model `json:"-"`
 }
 
 func All() ([]User, error) {

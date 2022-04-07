@@ -3,6 +3,7 @@ package account
 import (
 	"accounts.sidooh/db"
 	"accounts.sidooh/models"
+	"accounts.sidooh/models/user"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -19,6 +20,12 @@ type Model struct {
 	TelcoID    int            `json:"-"`
 	ReferrerID sql.NullInt32  `json:"-"`
 	UserID     sql.NullInt32  `json:"-"`
+}
+
+type ModelWithUser struct {
+	Model
+
+	User user.User `json:"user"`
 }
 
 type InviteModel struct {
@@ -58,6 +65,17 @@ func Create(db *db.DB, a Model) (Model, error) {
 
 func ById(db *db.DB, id uint) (Model, error) {
 	return find(db, "id = ?", id)
+}
+
+func ByIdWithUser(db *db.DB, id uint) (ModelWithUser, error) {
+	account := ModelWithUser{}
+
+	result := db.Conn.Joins("User").First(&account, id)
+	if result.Error != nil {
+		return account, result.Error
+	}
+
+	return account, nil
 }
 
 func ByPhone(db *db.DB, phone string) (Model, error) {
