@@ -7,6 +7,7 @@ import (
 	Account "accounts.sidooh/models/account"
 	"accounts.sidooh/repositories"
 	"accounts.sidooh/util"
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
 	"net/http"
@@ -36,6 +37,11 @@ type AccountByIdRequest struct {
 	WithUser string `query:"with_user" validate:"omitempty,oneof=true false"`
 }
 
+type AccountByPhoneRequest struct {
+	Phone    string `param:"phone" validate:"required,numeric,min=9"`
+	WithUser string `query:"with_user" validate:"omitempty,oneof=true false"`
+}
+
 func RegisterAccountsHandler(e *echo.Echo) {
 	// TODO: Refactor these; move to repo. Repo should determine and setup datastore independently
 	datastore := db.NewConnection()
@@ -55,7 +61,8 @@ func RegisterAccountsHandler(e *echo.Echo) {
 	e.GET("/api/accounts/:id", func(context echo.Context) error {
 		request := new(AccountByIdRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
-			return err
+			fmt.Println(err)
+			request.Id = context.Param("id")
 		}
 
 		id, err := strconv.ParseUint(request.Id, 10, 32)
@@ -84,20 +91,32 @@ func RegisterAccountsHandler(e *echo.Echo) {
 	}, util.CustomJWTMiddleware)
 
 	e.GET("/api/accounts/phone/:phone", func(context echo.Context) error {
+		request := new(AccountByPhoneRequest)
+		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
+			return err
+		}
 
 		// TODO: Move country to config
-		// TODO: create and bind phone request
-		phone, err := util.GetPhoneByCountry("KE", context.Param("phone"))
+		phone, err := util.GetPhoneByCountry("KE", request.Phone)
 		if err != nil {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
 
-		account, err := Account.ByPhone(datastore, phone)
-		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
-		}
+		if request.WithUser == "true" {
+			account, err := Account.ByPhoneWithUser(datastore, phone)
+			if err != nil {
+				return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			}
 
-		return context.JSON(http.StatusOK, account)
+			return context.JSON(http.StatusOK, account)
+		} else {
+			account, err := Account.ByPhone(datastore, phone)
+			if err != nil {
+				return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			}
+
+			return context.JSON(http.StatusOK, account)
+		}
 
 	}, util.CustomJWTMiddleware)
 

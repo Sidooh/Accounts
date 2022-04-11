@@ -82,6 +82,17 @@ func ByPhone(db *db.DB, phone string) (Model, error) {
 	return find(db, "phone = ?", phone)
 }
 
+func ByPhoneWithUser(db *db.DB, phone string) (ModelWithUser, error) {
+	account := ModelWithUser{}
+
+	result := db.Conn.Where("accounts.phone = ?", phone).Joins("User").First(&account)
+	if result.Error != nil {
+		return account, result.Error
+	}
+
+	return account, nil
+}
+
 func SearchByPhone(db *db.DB, phone string) ([]Model, error) {
 	//%%  a literal percent sign; consumes no value
 	return findAll(db, "phone LIKE ?", fmt.Sprintf("%%%s%%", phone))
