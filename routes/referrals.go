@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"accounts.sidooh/db"
 	"accounts.sidooh/errors"
 	"accounts.sidooh/middlewares"
 	Referral "accounts.sidooh/models/referral"
@@ -18,8 +17,7 @@ type CreateReferralRequest struct {
 func RegisterReferralsHandler(e *echo.Echo) {
 	e.GET("/api/referrals", func(context echo.Context) error {
 
-		datastore := db.NewConnection()
-		referrals, err := Referral.All(datastore)
+		referrals, err := Referral.All()
 		if err != nil {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
@@ -63,8 +61,7 @@ func RegisterReferralsHandler(e *echo.Echo) {
 		//	return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		//}
 
-		datastore := db.NewConnection()
-		referral, err := Referral.Create(datastore, Referral.Model{
+		referral, err := Referral.Create(Referral.Model{
 			AccountID:    request.AccountId,
 			RefereePhone: phone,
 		})

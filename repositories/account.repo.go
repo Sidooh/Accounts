@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"accounts.sidooh/db"
 	Account "accounts.sidooh/models/account"
 	Referral "accounts.sidooh/models/referral"
 	"accounts.sidooh/util"
@@ -11,15 +10,9 @@ import (
 	"fmt"
 )
 
-var datastore = new(db.DB)
-
-func Construct(db *db.DB) {
-	datastore = db
-}
-
 func Create(a Account.Model) (Account.Model, error) {
 	//	Get Referral if exists
-	referral, err := Referral.UnexpiredByPhone(datastore, a.Phone)
+	referral, err := Referral.UnexpiredByPhone(a.Phone)
 	if err != nil {
 		fmt.Println("Referral not found for", a.Phone)
 	} else {
@@ -30,7 +23,7 @@ func Create(a Account.Model) (Account.Model, error) {
 	}
 
 	//	Create Account
-	account, err := Account.Create(datastore, a)
+	account, err := Account.Create(a)
 	if err != nil {
 		return a, err
 	}
@@ -43,7 +36,7 @@ func Create(a Account.Model) (Account.Model, error) {
 			Valid: true,
 		}
 		referral.Status = constants.ACTIVE
-		referral.Save(datastore)
+		referral.Save()
 	}
 
 	return account, nil
@@ -51,7 +44,7 @@ func Create(a Account.Model) (Account.Model, error) {
 
 func CheckPin(id uint, pin string) error {
 	//	Get Account
-	account, err := Account.ById(datastore, id)
+	account, err := Account.ById(id)
 	if err != nil {
 		return errors.New("invalid credentials")
 	}
@@ -82,7 +75,7 @@ func CheckPin(id uint, pin string) error {
 
 func SetPin(id uint, pin string) error {
 	//	Get Account
-	account, err := Account.ById(datastore, id)
+	account, err := Account.ById(id)
 	if err != nil {
 		return errors.New("account not found")
 	}
@@ -93,7 +86,7 @@ func SetPin(id uint, pin string) error {
 		return errors.New("unable to set pin")
 	}
 
-	result := account.Update(datastore, "pin", hashedPin)
+	result := account.Update("pin", hashedPin)
 	if result.Error != nil {
 		return errors.New("unable to set pin")
 	}

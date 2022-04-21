@@ -14,7 +14,7 @@ func TestMain(m *testing.M) {
 	viper.Set("APP_ENV", "TEST")
 
 	db.Init()
-	conn := db.NewConnection().Conn
+	conn := db.Connection()
 
 	err := conn.AutoMigrate(&User{})
 	if err != nil {
@@ -47,7 +47,7 @@ func createRandomUser(t *testing.T, password string) User {
 
 func refreshDatabase() {
 	//Start clean slate
-	conn := db.NewConnection().Conn
+	conn := db.Connection()
 	conn.Where("1 = 1").Delete(&User{})
 }
 

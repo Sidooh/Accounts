@@ -26,9 +26,9 @@ func (Model) TableName() string {
 //TODO: Move the defaults to Config struct and remove from file
 var expiryTime = time.Duration(viper.GetFloat64("INVITE_EXPIRY")) * time.Hour
 
-func All(db *db.DB) ([]Model, error) {
+func All() ([]Model, error) {
 	var referrals []Model
-	result := db.Conn.Find(&referrals)
+	result := db.Connection().Find(&referrals)
 	if result.Error != nil {
 		return referrals, result.Error
 	}
@@ -36,7 +36,7 @@ func All(db *db.DB) ([]Model, error) {
 	return referrals, nil
 }
 
-func Create(db *db.DB, r Model) (Model, error) {
+func Create(r Model) (Model, error) {
 	if r.AccountID == 0 {
 		return Model{}, errors.New("AccountId is required")
 	}
@@ -49,7 +49,7 @@ func Create(db *db.DB, r Model) (Model, error) {
 		return Model{}, errors.New("phone is already taken")
 	}
 
-	result := db.Conn.Create(&r)
+	result := db.Connection().Create(&r)
 	if result.Error != nil {
 		return Model{}, errors.New("error creating referral")
 	}
@@ -65,13 +65,13 @@ func ByPhone(phone string) (Model, error) {
 	return find("referee_phone = ?", phone)
 }
 
-func UnexpiredByPhone(db *db.DB, phone string) (Model, error) {
+func UnexpiredByPhone(phone string) (Model, error) {
 	//TODO: Move the defaults to Config struct and remove from file
 	expiryTime = time.Duration(viper.GetFloat64("INVITE_EXPIRY")) * time.Hour
 
 	referral := Model{}
 
-	result := db.Conn.
+	result := db.Connection().
 		Where("referee_phone", phone).
 		Where("status", constants.PENDING).
 		Where("created_at > ?", time.Now().Add(-expiryTime)).
@@ -84,10 +84,10 @@ func UnexpiredByPhone(db *db.DB, phone string) (Model, error) {
 	return referral, nil
 }
 
-func Unexpired(db *db.DB) ([]Model, error) {
+func Unexpired() ([]Model, error) {
 	var referrals []Model
 
-	result := db.Conn.
+	result := db.Connection().
 		Where("status <> ?", constants.EXPIRED).
 		Find(&referrals)
 
@@ -99,7 +99,7 @@ func Unexpired(db *db.DB) ([]Model, error) {
 }
 
 func find(query interface{}, args ...interface{}) (Model, error) {
-	conn := db.NewConnection().Conn
+	conn := db.Connection()
 
 	referral := Model{}
 
@@ -111,14 +111,14 @@ func find(query interface{}, args ...interface{}) (Model, error) {
 	return referral, nil
 }
 
-func (r *Model) Save(db *db.DB) interface{} {
-	return db.Conn.Save(&r)
+func (r *Model) Save() interface{} {
+	return db.Connection().Save(&r)
 }
 
-func MarkExpired(db *db.DB) error {
+func MarkExpired() error {
 	expiryTime = time.Duration(viper.GetFloat64("INVITE_EXPIRY")) * time.Hour
 
-	db.Conn.
+	db.Connection().
 		Model(&Model{}).
 		Where("status", constants.PENDING).
 		Where("created_at < ?", time.Now().Add(-expiryTime)).

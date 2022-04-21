@@ -19,9 +19,8 @@ type DB struct {
 
 var db *DB
 
-//TODO: Rename to get conn and make it return db.Conn (or add a separate func)
-func NewConnection() *DB {
-	return db
+func Connection() *gorm.DB {
+	return db.Conn
 }
 
 func Init() {

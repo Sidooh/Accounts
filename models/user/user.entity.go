@@ -22,7 +22,7 @@ type User struct {
 }
 
 func All() ([]User, error) {
-	conn := db.NewConnection().Conn
+	conn := db.Connection()
 
 	var users []User
 	result := conn.Find(&users)
@@ -34,7 +34,7 @@ func All() ([]User, error) {
 }
 
 func CreateUser(u User) (User, error) {
-	conn := db.NewConnection().Conn
+	conn := db.Connection()
 	_, err := FindUserByEmail(u.Email)
 
 	if err == nil {
@@ -81,7 +81,7 @@ func SearchByEmail(email string) ([]User, error) {
 }
 
 func findAll(query interface{}, args interface{}) ([]User, error) {
-	conn := db.NewConnection().Conn
+	conn := db.Connection()
 
 	var users []User
 
@@ -94,7 +94,7 @@ func findAll(query interface{}, args interface{}) ([]User, error) {
 }
 
 func find(query interface{}, args interface{}) (User, error) {
-	conn := db.NewConnection().Conn
+	conn := db.Connection()
 
 	user := User{}
 

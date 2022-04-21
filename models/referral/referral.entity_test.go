@@ -13,17 +13,15 @@ import (
 	"time"
 )
 
-var datastore = new(db.DB)
-
 func TestMain(m *testing.M) {
 	util.SetupConfig("../../")
 
 	viper.Set("APP_ENV", "TEST")
 
 	db.Init()
-	datastore = db.NewConnection()
+	conn := db.Connection()
 
-	err := datastore.Conn.AutoMigrate(&Model{}, &Account.Model{})
+	err := conn.AutoMigrate(&Model{}, &Account.Model{})
 	if err != nil {
 		panic(err)
 	}
@@ -32,7 +30,7 @@ func TestMain(m *testing.M) {
 }
 
 func createRandomReferral(t *testing.T, phone string) Model {
-	account, err := Account.Create(datastore, Account.Model{
+	account, err := Account.Create(Account.Model{
 		Phone: util.RandomPhone(),
 	})
 	require.NoError(t, err)
@@ -42,7 +40,7 @@ func createRandomReferral(t *testing.T, phone string) Model {
 		RefereePhone: phone,
 	}
 
-	referral, err := Create(datastore, arg)
+	referral, err := Create(arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, referral)
 
@@ -58,7 +56,7 @@ func createRandomReferral(t *testing.T, phone string) Model {
 
 func refreshDatabase() {
 	//Start clean slate
-	conn := db.NewConnection().Conn
+	conn := db.Connection()
 	conn.Where("1 = 1").Delete(&Model{})
 }
 
@@ -68,7 +66,7 @@ func TestAll(t *testing.T) {
 	referral1 := createRandomReferral(t, util.RandomPhone())
 	referral2 := createRandomReferral(t, util.RandomPhone())
 
-	referrals, err := All(datastore)
+	referrals, err := All()
 	require.NoError(t, err)
 	require.NotEmpty(t, referrals)
 	require.Equal(t, len(referrals), 2)
@@ -118,10 +116,10 @@ func TestUnexpiredByPhone(t *testing.T) {
 
 	activeReferral := createRandomReferral(t, phone)
 	activeReferral.Status = constants.ACTIVE
-	activeReferral.Save(datastore)
+	activeReferral.Save()
 	require.NotEmpty(t, activeReferral)
 
-	referral, err := UnexpiredByPhone(datastore, phone)
+	referral, err := UnexpiredByPhone(phone)
 	require.Error(t, err)
 	require.Empty(t, referral)
 
@@ -131,7 +129,7 @@ func TestUnexpiredByPhone(t *testing.T) {
 	pendingReferral := createRandomReferral(t, phone)
 	require.NotEmpty(t, pendingReferral)
 
-	referral, err = UnexpiredByPhone(datastore, phone)
+	referral, err = UnexpiredByPhone(phone)
 	require.NoError(t, err)
 	require.NotEmpty(t, referral)
 
@@ -144,10 +142,10 @@ func TestUnexpiredByPhone(t *testing.T) {
 	timeExpiredReferral.CreatedAt = sqltime.Time{
 		Time: time.Now().Add(-48 * time.Hour),
 	}
-	timeExpiredReferral.Save(datastore)
+	timeExpiredReferral.Save()
 	require.NotEmpty(t, timeExpiredReferral)
 
-	referral, err = UnexpiredByPhone(datastore, phone)
+	referral, err = UnexpiredByPhone(phone)
 	require.Error(t, err)
 	require.Empty(t, referral)
 }
@@ -162,7 +160,7 @@ func TestMarkExpired(t *testing.T) {
 	// pending and time-expired <- to be removed
 	activeReferral := createRandomReferral(t, util.RandomPhone())
 	activeReferral.Status = constants.ACTIVE
-	activeReferral.Save(datastore)
+	activeReferral.Save()
 	require.NotEmpty(t, activeReferral)
 
 	pendingReferral := createRandomReferral(t, util.RandomPhone())
@@ -172,13 +170,13 @@ func TestMarkExpired(t *testing.T) {
 	timeExpiredReferral.CreatedAt = sqltime.Time{
 		Time: time.Now().Add(-48 * time.Hour),
 	}
-	timeExpiredReferral.Save(datastore)
+	timeExpiredReferral.Save()
 	require.NotEmpty(t, timeExpiredReferral)
 
-	err := MarkExpired(datastore)
+	err := MarkExpired()
 	require.NoError(t, err)
 
-	referrals, err := Unexpired(datastore)
+	referrals, err := Unexpired()
 	require.NoError(t, err)
 	require.NotEmpty(t, referrals)
 	require.Equal(t, len(referrals), 2)

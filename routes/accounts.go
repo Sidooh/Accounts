@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"accounts.sidooh/db"
 	"accounts.sidooh/errors"
 	"accounts.sidooh/middlewares"
 	Account "accounts.sidooh/models/account"
@@ -44,12 +43,10 @@ type AccountByPhoneRequest struct {
 
 func RegisterAccountsHandler(e *echo.Echo) {
 	// TODO: Refactor these; move to repo. Repo should determine and setup datastore independently
-	datastore := db.NewConnection()
-	repositories.Construct(datastore)
 
 	e.GET("/api/accounts", func(context echo.Context) error {
 
-		accounts, err := Account.All(datastore)
+		accounts, err := Account.All()
 		if err != nil {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
@@ -71,7 +68,7 @@ func RegisterAccountsHandler(e *echo.Echo) {
 		}
 
 		if request.WithUser == "true" {
-			account, err := Account.ByIdWithUser(datastore, uint(id))
+			account, err := Account.ByIdWithUser(uint(id))
 			if err != nil {
 				return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 			}
@@ -79,7 +76,7 @@ func RegisterAccountsHandler(e *echo.Echo) {
 			return context.JSON(http.StatusOK, account)
 
 		} else {
-			account, err := Account.ById(datastore, uint(id))
+			account, err := Account.ById(uint(id))
 			if err != nil {
 				return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 			}
@@ -103,14 +100,14 @@ func RegisterAccountsHandler(e *echo.Echo) {
 		}
 
 		if request.WithUser == "true" {
-			account, err := Account.ByPhoneWithUser(datastore, phone)
+			account, err := Account.ByPhoneWithUser(phone)
 			if err != nil {
 				return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 			}
 
 			return context.JSON(http.StatusOK, account)
 		} else {
-			account, err := Account.ByPhone(datastore, phone)
+			account, err := Account.ByPhone(phone)
 			if err != nil {
 				return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 			}
@@ -194,7 +191,7 @@ func RegisterAccountsHandler(e *echo.Echo) {
 			return err
 		}
 
-		accounts, err := Account.SearchByPhone(datastore, request.Phone)
+		accounts, err := Account.SearchByPhone(request.Phone)
 		if err != nil {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}

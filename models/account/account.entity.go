@@ -38,9 +38,9 @@ func (Model) TableName() string {
 	return "accounts"
 }
 
-func All(db *db.DB) ([]Model, error) {
+func All() ([]Model, error) {
 	var accounts []Model
-	result := db.Conn.Find(&accounts)
+	result := db.Connection().Find(&accounts)
 	if result.Error != nil {
 		return accounts, result.Error
 	}
@@ -48,13 +48,13 @@ func All(db *db.DB) ([]Model, error) {
 	return accounts, nil
 }
 
-func Create(db *db.DB, a Model) (Model, error) {
-	_, err := ByPhone(db, a.Phone)
+func Create(a Model) (Model, error) {
+	_, err := ByPhone(a.Phone)
 	if err == nil {
 		return Model{}, errors.New("phone is already taken")
 	}
 
-	result := db.Conn.Omit(clause.Associations).Create(&a)
+	result := db.Connection().Omit(clause.Associations).Create(&a)
 	if result.Error != nil {
 		fmt.Println(result.Error)
 		return Model{}, errors.New("error creating account")
@@ -63,14 +63,14 @@ func Create(db *db.DB, a Model) (Model, error) {
 	return a, nil
 }
 
-func ById(db *db.DB, id uint) (Model, error) {
-	return find(db, "id = ?", id)
+func ById(id uint) (Model, error) {
+	return find("id = ?", id)
 }
 
-func ByIdWithUser(db *db.DB, id uint) (ModelWithUser, error) {
+func ByIdWithUser(id uint) (ModelWithUser, error) {
 	account := ModelWithUser{}
 
-	result := db.Conn.Joins("User").First(&account, id)
+	result := db.Connection().Joins("User").First(&account, id)
 	if result.Error != nil {
 		return account, result.Error
 	}
@@ -78,14 +78,14 @@ func ByIdWithUser(db *db.DB, id uint) (ModelWithUser, error) {
 	return account, nil
 }
 
-func ByPhone(db *db.DB, phone string) (Model, error) {
-	return find(db, "phone = ?", phone)
+func ByPhone(phone string) (Model, error) {
+	return find("phone = ?", phone)
 }
 
-func ByPhoneWithUser(db *db.DB, phone string) (ModelWithUser, error) {
+func ByPhoneWithUser(phone string) (ModelWithUser, error) {
 	account := ModelWithUser{}
 
-	result := db.Conn.Where("accounts.phone = ?", phone).Joins("User").First(&account)
+	result := db.Connection().Where("accounts.phone = ?", phone).Joins("User").First(&account)
 	if result.Error != nil {
 		return account, result.Error
 	}
@@ -93,15 +93,15 @@ func ByPhoneWithUser(db *db.DB, phone string) (ModelWithUser, error) {
 	return account, nil
 }
 
-func SearchByPhone(db *db.DB, phone string) ([]Model, error) {
+func SearchByPhone(phone string) ([]Model, error) {
 	//%%  a literal percent sign; consumes no value
-	return findAll(db, "phone LIKE ?", fmt.Sprintf("%%%s%%", phone))
+	return findAll("phone LIKE ?", fmt.Sprintf("%%%s%%", phone))
 }
 
-func findAll(db *db.DB, query interface{}, args interface{}) ([]Model, error) {
+func findAll(query interface{}, args interface{}) ([]Model, error) {
 	var accounts []Model
 
-	result := db.Conn.Where(query, args).Find(&accounts)
+	result := db.Connection().Where(query, args).Find(&accounts)
 	if result.Error != nil {
 		return accounts, result.Error
 	}
@@ -109,10 +109,10 @@ func findAll(db *db.DB, query interface{}, args interface{}) ([]Model, error) {
 	return accounts, nil
 }
 
-func find(db *db.DB, query interface{}, args interface{}) (Model, error) {
+func find(query interface{}, args interface{}) (Model, error) {
 	account := Model{}
 
-	result := db.Conn.Where(query, args).First(&account)
+	result := db.Connection().Where(query, args).First(&account)
 	if result.Error != nil {
 		return account, result.Error
 	}
@@ -120,19 +120,19 @@ func find(db *db.DB, query interface{}, args interface{}) (Model, error) {
 	return account, nil
 }
 
-func (a *Model) Save(db *db.DB) *gorm.DB {
-	return db.Conn.Save(&a)
+func (a *Model) Save() *gorm.DB {
+	return db.Connection().Save(&a)
 }
 
-func (a *Model) Update(db *db.DB, column string, value string) *gorm.DB {
-	return db.Conn.Model(&a).Update(column, value)
+func (a *Model) Update(column string, value string) *gorm.DB {
+	return db.Connection().Model(&a).Update(column, value)
 }
 
 // Referral/Invite Queries
 
 // Ancestors 1. Get ancestors
 func Ancestors(id uint, levelLimit uint) ([]InviteModel, error) {
-	conn := db.NewConnection().Conn
+	conn := db.Connection()
 
 	var accounts []InviteModel
 	conn.Raw(
@@ -155,7 +155,7 @@ func Ancestors(id uint, levelLimit uint) ([]InviteModel, error) {
 
 // Descendants 2. Get descendants
 func Descendants(id uint, levelLimit uint) ([]InviteModel, error) {
-	conn := db.NewConnection().Conn
+	conn := db.Connection()
 
 	var accounts []InviteModel
 
