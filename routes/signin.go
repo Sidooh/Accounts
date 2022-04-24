@@ -5,6 +5,7 @@ import (
 	"accounts.sidooh/middlewares"
 	User "accounts.sidooh/models/user"
 	"accounts.sidooh/util"
+	"accounts.sidooh/util/constants"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strings"
@@ -20,7 +21,7 @@ type SignInResponse struct {
 }
 
 func RegisterSignInHandler(e *echo.Echo) {
-	e.POST("/api/users/signin", func(context echo.Context) error {
+	e.POST(constants.API_URL+"/users/signin", func(context echo.Context) error {
 
 		request := new(SignInRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {

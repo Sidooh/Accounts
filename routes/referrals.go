@@ -5,6 +5,7 @@ import (
 	"accounts.sidooh/middlewares"
 	Referral "accounts.sidooh/models/referral"
 	"accounts.sidooh/util"
+	"accounts.sidooh/util/constants"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -14,8 +15,8 @@ type CreateReferralRequest struct {
 	ReferralPhone string `json:"referral_phone" form:"referral_phone" validate:"required,numeric"`
 }
 
-func RegisterReferralsHandler(e *echo.Echo) {
-	e.GET("/api/referrals", func(context echo.Context) error {
+func RegisterReferralsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
+	e.GET(constants.API_URL+"/referrals", func(context echo.Context) error {
 
 		referrals, err := Referral.All()
 		if err != nil {
@@ -24,9 +25,9 @@ func RegisterReferralsHandler(e *echo.Echo) {
 
 		return context.JSON(http.StatusOK, referrals)
 
-	}, util.CustomJWTMiddleware)
+	}, authMiddleware)
 
-	e.GET("/api/referrals/:phone", func(context echo.Context) error {
+	e.GET(constants.API_URL+"/referrals/:phone", func(context echo.Context) error {
 
 		phone := context.Param("phone")
 
@@ -42,9 +43,9 @@ func RegisterReferralsHandler(e *echo.Echo) {
 
 		return context.JSON(http.StatusOK, referral)
 
-	}, util.CustomJWTMiddleware)
+	}, authMiddleware)
 
-	e.POST("/api/referrals", func(context echo.Context) error {
+	e.POST(constants.API_URL+"/referrals", func(context echo.Context) error {
 
 		request := new(CreateReferralRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {

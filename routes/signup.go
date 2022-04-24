@@ -5,6 +5,7 @@ import (
 	"accounts.sidooh/middlewares"
 	User "accounts.sidooh/models/user"
 	"accounts.sidooh/util"
+	"accounts.sidooh/util/constants"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strings"
@@ -17,7 +18,7 @@ type SignUpRequest struct {
 }
 
 func RegisterSignUpHandler(e *echo.Echo) {
-	go e.POST("/api/users/signup", func(context echo.Context) error {
+	go e.POST(constants.API_URL+"/users/signup", func(context echo.Context) error {
 		return handlerFunc(context)
 	})
 }

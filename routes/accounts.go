@@ -6,6 +6,7 @@ import (
 	Account "accounts.sidooh/models/account"
 	"accounts.sidooh/repositories"
 	"accounts.sidooh/util"
+	"accounts.sidooh/util/constants"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
@@ -41,10 +42,8 @@ type AccountByPhoneRequest struct {
 	WithUser string `query:"with_user" validate:"omitempty,oneof=true false"`
 }
 
-func RegisterAccountsHandler(e *echo.Echo) {
-	// TODO: Refactor these; move to repo. Repo should determine and setup datastore independently
-
-	e.GET("/api/accounts", func(context echo.Context) error {
+func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
+	e.GET(constants.API_URL+"/accounts", func(context echo.Context) error {
 
 		accounts, err := Account.All()
 		if err != nil {
@@ -53,9 +52,9 @@ func RegisterAccountsHandler(e *echo.Echo) {
 
 		return context.JSON(http.StatusOK, accounts)
 
-	}, util.CustomJWTMiddleware)
+	}, authMiddleware)
 
-	e.GET("/api/accounts/:id", func(context echo.Context) error {
+	e.GET(constants.API_URL+"/accounts/:id", func(context echo.Context) error {
 		request := new(AccountByIdRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			fmt.Println(err)
@@ -85,9 +84,9 @@ func RegisterAccountsHandler(e *echo.Echo) {
 
 		}
 
-	}, util.CustomJWTMiddleware)
+	}, authMiddleware)
 
-	e.GET("/api/accounts/phone/:phone", func(context echo.Context) error {
+	e.GET(constants.API_URL+"/accounts/phone/:phone", func(context echo.Context) error {
 		request := new(AccountByPhoneRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err
@@ -115,9 +114,9 @@ func RegisterAccountsHandler(e *echo.Echo) {
 			return context.JSON(http.StatusOK, account)
 		}
 
-	}, util.CustomJWTMiddleware)
+	}, authMiddleware)
 
-	e.POST("/api/accounts", func(context echo.Context) error {
+	e.POST(constants.API_URL+"/accounts", func(context echo.Context) error {
 		request := new(CreateAccountRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err
@@ -141,7 +140,7 @@ func RegisterAccountsHandler(e *echo.Echo) {
 
 	})
 
-	e.POST("/api/accounts/:id/check-pin", func(context echo.Context) error {
+	e.POST(constants.API_URL+"/accounts/:id/check-pin", func(context echo.Context) error {
 
 		request := new(CheckPinRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
@@ -162,9 +161,9 @@ func RegisterAccountsHandler(e *echo.Echo) {
 			"message": "ok",
 		})
 
-	}, util.CustomJWTMiddleware)
+	}, authMiddleware)
 
-	e.POST("/api/accounts/:id/set-pin", func(context echo.Context) error {
+	e.POST(constants.API_URL+"/accounts/:id/set-pin", func(context echo.Context) error {
 		request := new(CheckPinRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err
@@ -183,9 +182,9 @@ func RegisterAccountsHandler(e *echo.Echo) {
 		return context.JSON(http.StatusOK, map[string]string{
 			"message": "ok",
 		})
-	}, util.CustomJWTMiddleware)
+	}, authMiddleware)
 
-	e.GET("/api/accounts/search", func(context echo.Context) error {
+	e.GET(constants.API_URL+"/accounts/search", func(context echo.Context) error {
 		request := new(SearchPhoneRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err
@@ -198,9 +197,9 @@ func RegisterAccountsHandler(e *echo.Echo) {
 
 		return context.JSON(http.StatusOK, accounts)
 
-	}, util.CustomJWTMiddleware)
+	}, authMiddleware)
 
-	e.GET("/api/accounts/:id/ancestors", func(context echo.Context) error {
+	e.GET(constants.API_URL+"/accounts/:id/ancestors", func(context echo.Context) error {
 		request := new(AncestorsOrDescendantRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err
@@ -230,9 +229,9 @@ func RegisterAccountsHandler(e *echo.Echo) {
 
 		return context.JSON(http.StatusOK, account)
 
-	}, util.CustomJWTMiddleware)
+	}, authMiddleware)
 
-	e.GET("/api/accounts/:id/descendants", func(context echo.Context) error {
+	e.GET(constants.API_URL+"/accounts/:id/descendants", func(context echo.Context) error {
 		request := new(AncestorsOrDescendantRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err
@@ -261,5 +260,5 @@ func RegisterAccountsHandler(e *echo.Echo) {
 
 		return context.JSON(http.StatusOK, account)
 
-	}, util.CustomJWTMiddleware)
+	}, authMiddleware)
 }

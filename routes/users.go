@@ -4,7 +4,7 @@ import (
 	"accounts.sidooh/errors"
 	"accounts.sidooh/middlewares"
 	User "accounts.sidooh/models/user"
-	"accounts.sidooh/util"
+	"accounts.sidooh/util/constants"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"
@@ -19,9 +19,9 @@ type UserByIdRequest struct {
 	WithAccount string `query:"with_account" validate:"omitempty,oneof=true false"`
 }
 
-func RegisterUsersHandler(e *echo.Echo) {
+func RegisterUsersHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
-	e.GET("/api/users", func(context echo.Context) error {
+	e.GET(constants.API_URL+"/users", func(context echo.Context) error {
 
 		users, err := User.All()
 		if err != nil {
@@ -30,9 +30,9 @@ func RegisterUsersHandler(e *echo.Echo) {
 
 		return context.JSON(http.StatusOK, users)
 
-	}, util.CustomJWTMiddleware)
+	}, authMiddleware)
 
-	e.GET("/api/users/:id", func(context echo.Context) error {
+	e.GET(constants.API_URL+"/users/:id", func(context echo.Context) error {
 		request := new(UserByIdRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err
@@ -61,9 +61,9 @@ func RegisterUsersHandler(e *echo.Echo) {
 
 		return context.JSON(http.StatusOK, user)
 
-	}, util.CustomJWTMiddleware)
+	}, authMiddleware)
 
-	e.GET("/api/users/search", func(context echo.Context) error {
+	e.GET(constants.API_URL+"/users/search", func(context echo.Context) error {
 		request := new(SearchEmailRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err
@@ -76,5 +76,5 @@ func RegisterUsersHandler(e *echo.Echo) {
 
 		return context.JSON(http.StatusOK, users)
 
-	}, util.CustomJWTMiddleware)
+	}, authMiddleware)
 }

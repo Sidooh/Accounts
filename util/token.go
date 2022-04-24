@@ -1,17 +1,14 @@
 package util
 
 import (
-	"accounts.sidooh/errors"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/viper"
 	"net/http"
 	"strings"
 	"time"
 )
 
-var MySigningKey = []byte(viper.GetString("JWT_KEY"))
 var secureCookie = true
 
 type MyCustomClaims struct {
@@ -21,20 +18,9 @@ type MyCustomClaims struct {
 	jwt.RegisteredClaims
 }
 
-var CustomJWTMiddleware = middleware.JWTWithConfig(middleware.JWTConfig{
-	SigningKey:  MySigningKey,
-	TokenLookup: "cookie:jwt,header:Authorization",
-	Claims:      &MyCustomClaims{},
-	ErrorHandlerWithContext: func(err error, context echo.Context) error {
-		unAuth := errors.NotAuthorizedError{Message: "Not Authorized"}
-		return context.JSON(
-			unAuth.Status(),
-			unAuth.Errors(),
-		)
-	},
-})
-
 func GenerateToken(user MyCustomClaims) (string, error) {
+	MySigningKey := []byte(viper.GetString("JWT_KEY"))
+
 	claims := MyCustomClaims{
 		user.Id,
 		user.Email,

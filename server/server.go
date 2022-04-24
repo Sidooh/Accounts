@@ -5,6 +5,7 @@ import (
 	"accounts.sidooh/middlewares"
 	"accounts.sidooh/routes"
 	"accounts.sidooh/util"
+	"accounts.sidooh/util/constants"
 	"fmt"
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
@@ -43,14 +44,25 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 
 	e.Validator = &middlewares.CustomValidator{Validator: validator.New()}
 
-	routes.RegisterCurrentUserHandler(e)
+	authMiddlewareFunc := middlewares.TokenAuth(viper.GetString("JWT_KEY"))
+
+	routes.RegisterCurrentUserHandler(e, authMiddlewareFunc)
 	routes.RegisterSignInHandler(e)
 	routes.RegisterSignUpHandler(e)
-	routes.RegisterSignOutHandler(e)
+	routes.RegisterSignOutHandler(e, authMiddlewareFunc)
 
-	routes.RegisterAccountsHandler(e)
-	routes.RegisterReferralsHandler(e)
-	routes.RegisterUsersHandler(e)
+	routes.RegisterAccountsHandler(e, authMiddlewareFunc)
+	routes.RegisterReferralsHandler(e, authMiddlewareFunc)
+	routes.RegisterUsersHandler(e, authMiddlewareFunc)
+
+	//-------------------
+	// Custom middleware
+	//-------------------
+	// Stats
+	statsMiddleware := middlewares.NewStats()
+	e.Use(statsMiddleware.Process)
+	e.Use(middlewares.ServerHeader)
+	e.GET(constants.API_URL+"/stats", statsMiddleware.Handle) // Endpoint to get stats
 
 	e.Any("*", func(context echo.Context) error {
 		err := errors.NotFoundError{}
