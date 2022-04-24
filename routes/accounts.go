@@ -138,7 +138,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		return context.JSON(http.StatusOK, account)
 
-	})
+	}, authMiddleware)
 
 	e.POST(constants.API_URL+"/accounts/:id/check-pin", func(context echo.Context) error {
 

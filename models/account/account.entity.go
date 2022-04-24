@@ -8,24 +8,25 @@ import (
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type Model struct {
-	models.Model
+	models.ModelID
 
-	Phone      string         `json:"phone"`
-	Active     bool           `json:"active"`
-	Pin        sql.NullString `json:"-"`
-	TelcoID    int            `json:"-"`
-	ReferrerID sql.NullInt32  `json:"-"`
-	UserID     sql.NullInt32  `json:"-"`
+	Phone     string         `json:"phone" gorm:"uniqueIndex; size:16"`
+	Active    bool           `json:"active"`
+	Pin       sql.NullString `json:"-"`
+	TelcoID   int            `json:"-"`
+	InviterID sql.NullInt32  `json:"-"`
+	UserID    uint           `json:"-"`
+
+	models.ModelTimeStamps
 }
 
 type ModelWithUser struct {
 	Model
 
-	User user.User `json:"user"`
+	User user.Model `json:"user"`
 }
 
 type InviteModel struct {
@@ -35,6 +36,9 @@ type InviteModel struct {
 }
 
 func (Model) TableName() string {
+	return "accounts"
+}
+func (ModelWithUser) TableName() string {
 	return "accounts"
 }
 
@@ -48,15 +52,15 @@ func All() ([]Model, error) {
 	return accounts, nil
 }
 
+// TODO: Check whether using pointers here saves memory
 func Create(a Model) (Model, error) {
 	_, err := ByPhone(a.Phone)
 	if err == nil {
 		return Model{}, errors.New("phone is already taken")
 	}
 
-	result := db.Connection().Omit(clause.Associations).Create(&a)
+	result := db.Connection().Omit("UserID").Create(&a)
 	if result.Error != nil {
-		fmt.Println(result.Error)
 		return Model{}, errors.New("error creating account")
 	}
 

@@ -3,31 +3,31 @@ package routes
 import (
 	"accounts.sidooh/errors"
 	"accounts.sidooh/middlewares"
-	Referral "accounts.sidooh/models/referral"
+	Invite "accounts.sidooh/models/invite"
 	"accounts.sidooh/util"
 	"accounts.sidooh/util/constants"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
 
-type CreateReferralRequest struct {
-	AccountId     uint   `json:"account_id" form:"account_id" validate:"required,numeric"`
-	ReferralPhone string `json:"referral_phone" form:"referral_phone" validate:"required,numeric"`
+type CreateInviteRequest struct {
+	InviterId uint   `json:"inviter_Id" form:"inviter_Id" validate:"required,numeric"`
+	Phone     string `json:"phone" form:"phone" validate:"required,numeric"`
 }
 
-func RegisterReferralsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
-	e.GET(constants.API_URL+"/referrals", func(context echo.Context) error {
+func RegisterInvitesHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
+	e.GET(constants.API_URL+"/invites", func(context echo.Context) error {
 
-		referrals, err := Referral.All()
+		invites, err := Invite.All()
 		if err != nil {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
 
-		return context.JSON(http.StatusOK, referrals)
+		return context.JSON(http.StatusOK, invites)
 
 	}, authMiddleware)
 
-	e.GET(constants.API_URL+"/referrals/:phone", func(context echo.Context) error {
+	e.GET(constants.API_URL+"/invites/:phone", func(context echo.Context) error {
 
 		phone := context.Param("phone")
 
@@ -36,40 +36,40 @@ func RegisterReferralsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) 
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
 
-		referral, err := Referral.ByPhone(phone)
+		invite, err := Invite.ByPhone(phone)
 		if err != nil {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
 
-		return context.JSON(http.StatusOK, referral)
+		return context.JSON(http.StatusOK, invite)
 
 	}, authMiddleware)
 
-	e.POST(constants.API_URL+"/referrals", func(context echo.Context) error {
+	e.POST(constants.API_URL+"/invites", func(context echo.Context) error {
 
-		request := new(CreateReferralRequest)
+		request := new(CreateInviteRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err
 		}
 
-		phone, err := util.GetPhoneByCountry("KE", request.ReferralPhone)
+		phone, err := util.GetPhoneByCountry("KE", request.Phone)
 		if err != nil {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
 
-		//accountId, err := strconv.ParseUint(request.AccountId, 10, 32)
+		//InviterId, err := strconv.ParseUint(request.InviterId, 10, 32)
 		//if err != nil {
 		//	return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		//}
 
-		referral, err := Referral.Create(Referral.Model{
-			AccountID:    request.AccountId,
-			RefereePhone: phone,
+		invite, err := Invite.Create(Invite.Model{
+			InviterID: request.InviterId,
+			Phone:     phone,
 		})
 		if err != nil {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
 
-		return context.JSON(http.StatusOK, referral)
-	})
+		return context.JSON(http.StatusOK, invite)
+	}, authMiddleware)
 }

@@ -1,6 +1,7 @@
 package constants
 
 const PENDING = "PENDING"
+const INACTIVE = "INACTIVE"
 const ACTIVE = "ACTIVE"
 const EXPIRED = "EXPIRED"
 

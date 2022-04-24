@@ -16,7 +16,7 @@ func TestMain(m *testing.M) {
 	db.Init()
 	conn := db.Connection()
 
-	err := conn.AutoMigrate(&User{})
+	err := conn.AutoMigrate(&Model{})
 	if err != nil {
 		panic(err)
 	}
@@ -24,13 +24,13 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func createUser(arg User) (User, error) {
+func createUser(arg Model) (Model, error) {
 	user, err := CreateUser(arg)
 	return user, err
 }
 
-func createRandomUser(t *testing.T, password string) User {
-	arg := User{
+func createRandomUser(t *testing.T, password string) Model {
+	arg := Model{
 		Email:    util.RandomEmail(),
 		Password: password,
 	}
@@ -48,7 +48,7 @@ func createRandomUser(t *testing.T, password string) User {
 func refreshDatabase() {
 	//Start clean slate
 	conn := db.Connection()
-	conn.Where("1 = 1").Delete(&User{})
+	conn.Where("1 = 1").Delete(&Model{})
 }
 
 func TestAll(t *testing.T) {
@@ -100,7 +100,7 @@ func TestAuthUser(t *testing.T) {
 	password := util.RandomString(6)
 	user1 := createRandomUser(t, password)
 
-	user2, err := AuthUser(User{Email: user1.Email, Password: password})
+	user2, err := AuthUser(Model{Email: user1.Email, Password: password})
 
 	require.NoError(t, err)
 	require.NotEmpty(t, user2)
@@ -117,13 +117,13 @@ func TestSearchByEmail(t *testing.T) {
 	refreshDatabase()
 
 	password := util.RandomString(6)
-	arg := User{
+	arg := Model{
 		Email:    "ab@a.a",
 		Password: password,
 	}
 	user1, err := createUser(arg)
 
-	arg = User{
+	arg = Model{
 		Email:    "a@a.a",
 		Password: password,
 	}
