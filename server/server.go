@@ -52,7 +52,7 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 	routes.RegisterSignOutHandler(e, authMiddlewareFunc)
 
 	routes.RegisterAccountsHandler(e, authMiddlewareFunc)
-	routes.RegisterReferralsHandler(e, authMiddlewareFunc)
+	routes.RegisterInvitesHandler(e, authMiddlewareFunc)
 	routes.RegisterUsersHandler(e, authMiddlewareFunc)
 
 	//-------------------

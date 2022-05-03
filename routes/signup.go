@@ -34,7 +34,7 @@ func handlerFunc(context echo.Context) error {
 		username = request.Email
 	}
 
-	user, err := User.CreateUser(User.User{
+	user, err := User.CreateUser(User.Model{
 		Email:    request.Email,
 		Password: strings.TrimSpace(request.Password),
 		Username: username,

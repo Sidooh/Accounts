@@ -28,7 +28,7 @@ func RegisterSignInHandler(e *echo.Echo) {
 			return err
 		}
 
-		user, err := User.AuthUser(User.User{
+		user, err := User.AuthUser(User.Model{
 			Email:    request.Email,
 			Password: strings.TrimSpace(request.Password),
 		})

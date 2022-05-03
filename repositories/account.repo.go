@@ -2,7 +2,7 @@ package repositories
 
 import (
 	Account "accounts.sidooh/models/account"
-	Referral "accounts.sidooh/models/referral"
+	Invite "accounts.sidooh/models/invite"
 	"accounts.sidooh/util"
 	"accounts.sidooh/util/constants"
 	"database/sql"
@@ -11,13 +11,13 @@ import (
 )
 
 func Create(a Account.Model) (Account.Model, error) {
-	//	Get Referral if exists
-	referral, err := Referral.UnexpiredByPhone(a.Phone)
+	//	Get Invite if exists
+	invite, err := Invite.UnexpiredByPhone(a.Phone)
 	if err != nil {
-		fmt.Println("Referral not found for", a.Phone)
+		fmt.Println("Invite not found for", a.Phone)
 	} else {
-		a.ReferrerID = sql.NullInt32{
-			Int32: int32(referral.AccountID),
+		a.InviterID = sql.NullInt32{
+			Int32: int32(invite.InviterID),
 			Valid: true,
 		}
 	}
@@ -28,15 +28,12 @@ func Create(a Account.Model) (Account.Model, error) {
 		return a, err
 	}
 
-	//	Update referral
-	if referral.ID != 0 {
+	//	Update invite
+	if invite.ID != 0 {
 
-		referral.RefereeID = sql.NullInt32{
-			Int32: int32(account.ID),
-			Valid: true,
-		}
-		referral.Status = constants.ACTIVE
-		referral.Save()
+		invite.AccountID = account.ID
+		invite.Status = constants.ACTIVE
+		invite.Save()
 	}
 
 	return account, nil
