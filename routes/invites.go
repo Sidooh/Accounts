@@ -8,10 +8,11 @@ import (
 	"accounts.sidooh/util/constants"
 	"github.com/labstack/echo/v4"
 	"net/http"
+	"strconv"
 )
 
 type CreateInviteRequest struct {
-	InviterId uint   `json:"inviter_Id" form:"inviter_Id" validate:"required,numeric"`
+	InviterId string `json:"inviter_id" form:"inviter_id" validate:"required,numeric"`
 	Phone     string `json:"phone" form:"phone" validate:"required,numeric"`
 }
 
@@ -52,18 +53,19 @@ func RegisterInvitesHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return err
 		}
 
+		//TODO: Move Country to env and fetch from it
 		phone, err := util.GetPhoneByCountry("KE", request.Phone)
 		if err != nil {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
 
-		//InviterId, err := strconv.ParseUint(request.InviterId, 10, 32)
-		//if err != nil {
-		//	return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
-		//}
+		InviterId, err := strconv.ParseUint(request.InviterId, 10, 32)
+		if err != nil {
+			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+		}
 
 		invite, err := Invite.Create(Invite.Model{
-			InviterID: request.InviterId,
+			InviterID: uint(InviterId),
 			Phone:     phone,
 		})
 		if err != nil {
