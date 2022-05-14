@@ -3,6 +3,7 @@ package repositories
 import (
 	Account "accounts.sidooh/models/account"
 	Invite "accounts.sidooh/models/invite"
+	User "accounts.sidooh/models/user"
 	"accounts.sidooh/util"
 	"accounts.sidooh/util/constants"
 	"database/sql"
@@ -89,4 +90,48 @@ func SetPin(id uint, pin string) error {
 	}
 
 	return nil
+}
+
+func HasPin(id uint) error {
+	//	Get Account
+	account, err := Account.ById(id)
+	if err != nil {
+		return errors.New("invalid credentials")
+	}
+
+	//	Check Pin exists
+	if account.Pin.Valid {
+		return nil
+	}
+
+	return errors.New("invalid credentials")
+}
+
+func UpdateProfile(id uint, name string) (User.Model, error) {
+	//	Get Account
+	account, err := Account.ByIdWithUser(id)
+	if err != nil {
+		return User.Model{}, errors.New("invalid credentials")
+	}
+
+	if account.User.ID != 0 {
+		account.User.Name = name
+
+		account.User.Save()
+	} else {
+		account.User.Name = name
+		account.User.Email = account.Phone + "@sidooh.net"
+
+		user, err := User.CreateUser(account.User)
+		if err != nil {
+			return User.Model{}, err
+		}
+
+		account.User = user
+		account.UserID = user.ID
+		account.Save()
+	}
+
+	return account.User, nil
+
 }

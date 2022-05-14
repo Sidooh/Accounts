@@ -3,19 +3,22 @@ package security_question
 import (
 	"accounts.sidooh/db"
 	"accounts.sidooh/models"
+	"errors"
 )
 
-type SecurityQuestion struct {
-	models.Model
+type Model struct {
+	models.ModelID
 
-	Question string `json:"email"`
+	Question string `json:"question" gorm:"unique"`
 	Status   string `json:"status"`
+
+	models.ModelTimeStamps
 }
 
-func All() ([]SecurityQuestion, error) {
+func All() ([]Model, error) {
 	conn := db.Connection()
 
-	var questions []SecurityQuestion
+	var questions []Model
 	result := conn.Find(&questions)
 	if result.Error != nil {
 		return questions, result.Error
@@ -24,62 +27,35 @@ func All() ([]SecurityQuestion, error) {
 	return questions, nil
 }
 
-//func CreateUser(u User) (User, error) {
-//	conn := db.NewConnection().Conn
-//	_, err := FindUserByEmail(u.Email)
-//
-//	if err == nil {
-//		return User{}, errors.New("email is already taken")
-//	}
-//
-//	u.Password, _ = util.ToHash(u.Password)
-//
-//	result := conn.Create(&u)
-//	if result.Error != nil {
-//		return User{}, errors.New("error creating user")
-//	}
-//
-//	return u, nil
-//}
+func CreateQuestion(s Model) (Model, error) {
+	conn := db.Connection()
+	_, err := FindQuestion(s.Question)
 
-//func AuthUser(u User) (User, error) {
-//	user, err := FindUserByEmail(u.Email)
-//
-//	if err != nil {
-//		return User{}, errors.New("invalid credentials")
-//	}
-//
-//	res := util.Compare(user.Password, u.Password)
-//
-//	if !res {
-//		return User{}, errors.New("invalid credentials")
-//	}
-//
-//	return user, nil
-//}
+	if err == nil {
+		return Model{}, errors.New("question exists")
+	}
 
-//func findAll(query interface{}, args interface{}) ([]SecurityQuestion, error) {
-//	conn := db.Connection()
-//
-//	var questions []SecurityQuestion
-//
-//	result := conn.Where(query, args).Find(&questions)
-//	if result.Error != nil {
-//		return questions, result.Error
-//	}
-//
-//	return questions, nil
-//}
-//
-//func find(query interface{}, args interface{}) (SecurityQuestion, error) {
-//	conn := db.Connection()
-//
-//	question := SecurityQuestion{}
-//
-//	result := conn.Where(query, args).First(&question)
-//	if result.Error != nil {
-//		return question, result.Error
-//	}
-//
-//	return question, nil
-//}
+	result := conn.Create(&s)
+	if result.Error != nil {
+		return Model{}, errors.New("error creating question")
+	}
+
+	return s, nil
+}
+
+func FindQuestion(question string) (Model, error) {
+	return find("question = ?", question)
+}
+
+func find(query interface{}, args interface{}) (Model, error) {
+	conn := db.Connection()
+
+	secQn := Model{}
+
+	result := conn.Where(query, args).First(&secQn)
+	if result.Error != nil {
+		return secQn, result.Error
+	}
+
+	return secQn, nil
+}

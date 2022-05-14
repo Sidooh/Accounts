@@ -54,6 +54,8 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 	routes.RegisterAccountsHandler(e, authMiddlewareFunc)
 	routes.RegisterInvitesHandler(e, authMiddlewareFunc)
 	routes.RegisterUsersHandler(e, authMiddlewareFunc)
+	routes.RegisterSecurityQuestionsHandler(e, authMiddlewareFunc)
+	routes.RegisterSecurityQuestionAnswersHandler(e, authMiddlewareFunc)
 
 	//-------------------
 	// Custom middleware

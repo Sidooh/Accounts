@@ -7,18 +7,19 @@ import (
 	"errors"
 	"fmt"
 	"github.com/SamuelTissot/sqltime"
+	"gorm.io/gorm"
 )
 
 type Model struct {
 	models.ModelID
 
-	Name            string       `json:"name" gorm:"size:64"`
-	Username        string       `json:"username" gorm:"uniqueIndex; size:16"`
-	IdNumber        string       `json:"id_number" gorm:"size:16"`
-	Status          string       `json:"status" gorm:"size:16"`
-	Email           string       `json:"email" gorm:"uniqueIndex; size:256"`
-	EmailVerifiedAt sqltime.Time `json:"-"`
-	Password        string       `json:"-"`
+	Name            string        `json:"name" gorm:"size:64"`
+	Username        string        `json:"username" gorm:"uniqueIndex; size:16"`
+	IdNumber        string        `json:"id_number" gorm:"size:16"`
+	Status          string        `json:"status" gorm:"size:16"`
+	Email           string        `json:"email" gorm:"uniqueIndex; size:256; not null"`
+	EmailVerifiedAt *sqltime.Time `json:"-"`
+	Password        string        `json:"-"`
 
 	models.ModelTimeStamps
 }
@@ -110,4 +111,12 @@ func find(query interface{}, args interface{}) (Model, error) {
 	}
 
 	return user, nil
+}
+
+func (u *Model) Save() *gorm.DB {
+	return db.Connection().Save(&u)
+}
+
+func (u *Model) Update(column string, value string) *gorm.DB {
+	return db.Connection().Model(&u).Update(column, value)
 }

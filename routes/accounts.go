@@ -7,7 +7,6 @@ import (
 	"accounts.sidooh/repositories"
 	"accounts.sidooh/util"
 	"accounts.sidooh/util/constants"
-	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
 	"net/http"
@@ -42,6 +41,11 @@ type AccountByPhoneRequest struct {
 	WithUser string `query:"with_user" validate:"omitempty,oneof=true false"`
 }
 
+type UpdateProfileRequest struct {
+	Id   string `param:"id" validate:"required,numeric,min=1"`
+	Name string `json:"name" validate:"required,min=3"`
+}
+
 func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	e.GET(constants.API_URL+"/accounts", func(context echo.Context) error {
 
@@ -57,7 +61,6 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	e.GET(constants.API_URL+"/accounts/:id", func(context echo.Context) error {
 		request := new(AccountByIdRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
-			fmt.Println(err)
 			request.Id = context.Param("id")
 		}
 
@@ -261,4 +264,49 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		return context.JSON(http.StatusOK, account)
 
 	}, authMiddleware)
+
+	e.GET(constants.API_URL+"/accounts/:id/has-pin", func(context echo.Context) error {
+
+		request := new(AccountByIdRequest)
+		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
+			return err
+		}
+
+		id, err := strconv.ParseUint(context.Param("id"), 10, 32)
+		if err != nil {
+			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+		}
+
+		err = repositories.HasPin(uint(id))
+		if err != nil {
+			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+		}
+
+		return context.JSON(http.StatusOK, map[string]bool{
+			"message": true,
+		})
+
+	}, authMiddleware)
+
+	e.POST(constants.API_URL+"/accounts/:id/update-profile", func(context echo.Context) error {
+
+		request := new(UpdateProfileRequest)
+		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
+			return err
+		}
+
+		id, err := strconv.ParseUint(context.Param("id"), 10, 32)
+		if err != nil {
+			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+		}
+
+		user, err := repositories.UpdateProfile(uint(id), request.Name)
+		if err != nil {
+			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+		}
+
+		return context.JSON(http.StatusOK, user)
+
+	}, authMiddleware)
+
 }

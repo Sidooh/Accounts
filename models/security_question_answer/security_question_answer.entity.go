@@ -1,85 +1,92 @@
-package security_question
+package security_question_answer
 
 import (
+	"accounts.sidooh/db"
 	"accounts.sidooh/models"
+	Account "accounts.sidooh/models/account"
+	SecurityQuestion "accounts.sidooh/models/security_question"
+	"errors"
 )
 
-type SecurityQuestionAnswer struct {
-	models.Model
+type Model struct {
+	models.ModelID
 
-	Question string `json:"email"`
-	Status   string `json:"status"`
+	Answer string
+
+	QuestionID uint `json:"-"`
+	AccountID  uint `json:"-"`
+
+	models.ModelTimeStamps
 }
 
-//
-//func All() ([]SecurityQuestionAnswer, error) {
-//	conn := db.Connection()
-//
-//	var answers []SecurityQuestionAnswer
-//	result := conn.Find(&answers)
-//	if result.Error != nil {
-//		return answers, result.Error
-//	}
-//
-//	return answers, nil
-//}
+type ModelWithQuestion struct {
+	Model
 
-//func CreateUser(u User) (User, error) {
-//	conn := db.NewConnection().Conn
-//	_, err := FindUserByEmail(u.Email)
-//
-//	if err == nil {
-//		return User{}, errors.New("email is already taken")
-//	}
-//
-//	u.Password, _ = util.ToHash(u.Password)
-//
-//	result := conn.Create(&u)
-//	if result.Error != nil {
-//		return User{}, errors.New("error creating user")
-//	}
-//
-//	return u, nil
-//}
+	Question SecurityQuestion.Model `json:"question"`
+}
 
-//func AuthUser(u User) (User, error) {
-//	user, err := FindUserByEmail(u.Email)
-//
-//	if err != nil {
-//		return User{}, errors.New("invalid credentials")
-//	}
-//
-//	res := util.Compare(user.Password, u.Password)
-//
-//	if !res {
-//		return User{}, errors.New("invalid credentials")
-//	}
-//
-//	return user, nil
-//}
+type ModelWithAccountAndQuestion struct {
+	ModelWithQuestion
 
-//func findAll(query interface{}, args interface{}) ([]SecurityQuestion, error) {
-//	conn := db.Connection()
-//
-//	var questions []SecurityQuestion
-//
-//	result := conn.Where(query, args).Find(&questions)
-//	if result.Error != nil {
-//		return questions, result.Error
-//	}
-//
-//	return questions, nil
-//}
-//
-//func find(query interface{}, args interface{}) (SecurityQuestion, error) {
-//	conn := db.Connection()
-//
-//	question := SecurityQuestion{}
-//
-//	result := conn.Where(query, args).First(&question)
-//	if result.Error != nil {
-//		return question, result.Error
-//	}
-//
-//	return question, nil
-//}
+	Account Account.Model `json:"account"`
+}
+
+func (Model) TableName() string {
+	return "security_question_answers"
+}
+
+func (ModelWithQuestion) TableName() string {
+	return "security_question_answers"
+}
+
+func (ModelWithAccountAndQuestion) TableName() string {
+	return "security_question_answers"
+}
+
+func ByAccountIdWithQuestion(id uint) ([]ModelWithQuestion, error) {
+	var questions []ModelWithQuestion
+
+	result := db.Connection().Joins("Question").Find(&questions, id)
+	if result.Error != nil {
+		return questions, result.Error
+	}
+
+	return questions, nil
+}
+
+// TODO: Check whether using pointers here saves memory
+func Create(s Model) (Model, error) {
+	_, err := ByAccountAndQuestion(s.AccountID, s.QuestionID)
+	if err == nil {
+		return Model{}, errors.New("question and answer already exists")
+	}
+
+	result := db.Connection().Create(&s)
+	if result.Error != nil {
+		return Model{}, errors.New("error creating answer")
+	}
+
+	return s, nil
+}
+
+func ByAccountAndQuestion(accountId uint, questionId uint) (Model, error) {
+	model := Model{}
+
+	result := db.Connection().Where("account_id = ? and question_id = ?", accountId, questionId).First(&model)
+	if result.Error != nil {
+		return model, result.Error
+	}
+
+	return model, nil
+}
+
+func find(query interface{}, args interface{}) (Model, error) {
+	model := Model{}
+
+	result := db.Connection().Where(query, args).First(&model)
+	if result.Error != nil {
+		return model, result.Error
+	}
+
+	return model, nil
+}
