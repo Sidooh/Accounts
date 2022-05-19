@@ -74,7 +74,7 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 
 	port := viper.GetString("PORT")
 	if port == "" {
-		port = "3000"
+		port = "8000"
 	}
 
 	s := &http2.Server{
