@@ -5,13 +5,15 @@ import (
 	"accounts.sidooh/models"
 	Account "accounts.sidooh/models/account"
 	SecurityQuestion "accounts.sidooh/models/security_question"
+	"accounts.sidooh/util"
 	"errors"
+	"strings"
 )
 
 type Model struct {
 	models.ModelID
 
-	Answer string
+	Answer string `json:"-"`
 
 	QuestionID uint `json:"-"`
 	AccountID  uint `json:"-"`
@@ -20,7 +22,9 @@ type Model struct {
 }
 
 type ModelWithQuestion struct {
-	Model
+	// TODO: Can we flatten the results from here? (like array flatten),
+	// 	related: Since this only brings back id, is it necessary?
+	Model /*`json:"-"`*/
 
 	Question SecurityQuestion.Model `json:"question"`
 }
@@ -43,17 +47,6 @@ func (ModelWithAccountAndQuestion) TableName() string {
 	return "security_question_answers"
 }
 
-func ByAccountIdWithQuestion(id uint) ([]ModelWithQuestion, error) {
-	var questions []ModelWithQuestion
-
-	result := db.Connection().Joins("Question").Find(&questions, id)
-	if result.Error != nil {
-		return questions, result.Error
-	}
-
-	return questions, nil
-}
-
 // TODO: Check whether using pointers here saves memory
 func Create(s Model) (Model, error) {
 	_, err := ByAccountAndQuestion(s.AccountID, s.QuestionID)
@@ -61,12 +54,25 @@ func Create(s Model) (Model, error) {
 		return Model{}, errors.New("question and answer already exists")
 	}
 
+	s.Answer, _ = util.ToHash(strings.ToLower(s.Answer))
+
 	result := db.Connection().Create(&s)
 	if result.Error != nil {
 		return Model{}, errors.New("error creating answer")
 	}
 
 	return s, nil
+}
+
+func ByAccount(accountId uint) ([]Model, error) {
+	var model []Model
+
+	result := db.Connection().Where("account_id = ?", accountId).Find(&model)
+	if result.Error != nil {
+		return model, result.Error
+	}
+
+	return model, nil
 }
 
 func ByAccountAndQuestion(accountId uint, questionId uint) (Model, error) {
@@ -78,6 +84,19 @@ func ByAccountAndQuestion(accountId uint, questionId uint) (Model, error) {
 	}
 
 	return model, nil
+}
+
+func ByAccountIdWithQuestion(id uint) ([]ModelWithQuestion, error) {
+	var questions []ModelWithQuestion
+
+	// TODO: Should we check for existence of account first?
+	// TODO: Can we flatten the results from here? (like array flatten)
+	result := db.Connection().Where("account_id = ?", id).Joins("Question").Find(&questions)
+	if result.Error != nil {
+		return questions, result.Error
+	}
+
+	return questions, nil
 }
 
 func find(query interface{}, args interface{}) (Model, error) {
