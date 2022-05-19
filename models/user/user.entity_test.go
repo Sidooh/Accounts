@@ -31,6 +31,7 @@ func createUser(arg Model) (Model, error) {
 
 func createRandomUser(t *testing.T, password string) Model {
 	arg := Model{
+		Username: util.RandomName(),
 		Email:    util.RandomEmail(),
 		Password: password,
 	}

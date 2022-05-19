@@ -101,8 +101,8 @@ func RegisterSecurityQuestionAnswersHandler(e *echo.Echo, authMiddleware echo.Mi
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
 
-		return context.JSON(http.StatusOK, map[string]string{
-			"message": "ok",
+		return context.JSON(http.StatusOK, map[string]bool{
+			"message": true,
 		})
 
 	}, authMiddleware)
