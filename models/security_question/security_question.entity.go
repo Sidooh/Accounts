@@ -15,6 +15,10 @@ type Model struct {
 	models.ModelTimeStamps
 }
 
+func (Model) TableName() string {
+	return "security_questions"
+}
+
 func All() ([]Model, error) {
 	conn := db.Connection()
 
