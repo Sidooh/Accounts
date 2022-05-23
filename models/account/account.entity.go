@@ -102,6 +102,18 @@ func SearchByPhone(phone string) ([]Model, error) {
 	return findAll("phone LIKE ?", fmt.Sprintf("%%%s%%", phone))
 }
 
+func SearchByIdOrPhone(search string) (Model, error) {
+	account := Model{}
+
+	result := db.Connection().Where("id = ? OR phone = ?", search, search).First(&account)
+	if result.Error != nil {
+		return account, result.Error
+	}
+
+	return account, nil
+
+}
+
 func findAll(query interface{}, args interface{}) ([]Model, error) {
 	var accounts []Model
 
@@ -113,7 +125,7 @@ func findAll(query interface{}, args interface{}) ([]Model, error) {
 	return accounts, nil
 }
 
-func find(query interface{}, args interface{}) (Model, error) {
+func find(query interface{}, args ...interface{}) (Model, error) {
 	account := Model{}
 
 	result := db.Connection().Where(query, args).First(&account)

@@ -23,7 +23,11 @@ type CheckPinRequest struct {
 }
 
 type SearchPhoneRequest struct {
-	Phone string `query:"phone" validate:"required,numeric,min=3,max=12"`
+	Search string `query:"search" validate:"required,numeric,min=3,max=12"`
+}
+
+type SearchIdOrPhoneRequest struct {
+	Search string `query:"search" validate:"required,numeric,min=1,max=12"`
 }
 
 type AncestorsOrDescendantRequest struct {
@@ -187,13 +191,28 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		})
 	}, authMiddleware)
 
-	e.GET(constants.API_URL+"/accounts/search", func(context echo.Context) error {
+	e.GET(constants.API_URL+"/accounts/search/id_or_phone", func(context echo.Context) error {
+		request := new(SearchIdOrPhoneRequest)
+		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
+			return err
+		}
+
+		account, err := Account.SearchByIdOrPhone(request.Search)
+		if err != nil {
+			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+		}
+
+		return context.JSON(http.StatusOK, account)
+
+	}, authMiddleware)
+
+	e.GET(constants.API_URL+"/accounts/search/phone", func(context echo.Context) error {
 		request := new(SearchPhoneRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err
 		}
 
-		accounts, err := Account.SearchByPhone(request.Phone)
+		accounts, err := Account.SearchByPhone(request.Search)
 		if err != nil {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
