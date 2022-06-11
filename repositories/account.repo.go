@@ -6,7 +6,6 @@ import (
 	User "accounts.sidooh/models/user"
 	"accounts.sidooh/util"
 	"accounts.sidooh/util/constants"
-	"database/sql"
 	"errors"
 	"fmt"
 )
@@ -17,10 +16,7 @@ func Create(a Account.Model) (Account.Model, error) {
 	if err != nil {
 		fmt.Println("Invite not found for", a.Phone)
 	} else {
-		a.InviterID = sql.NullInt32{
-			Int32: int32(invite.InviterID),
-			Valid: true,
-		}
+		a.InviterID = invite.InviterID
 	}
 
 	//	Create Account

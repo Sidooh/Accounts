@@ -17,8 +17,8 @@ type Model struct {
 	Active    bool           `json:"active"`
 	Pin       sql.NullString `json:"-"`
 	TelcoID   int            `json:"-"`
-	InviterID sql.NullInt32  `json:"-"`
-	UserID    uint           `json:"-"`
+	InviterID uint           `json:"inviter_id,omitempty"`
+	UserID    uint           `json:"user_id,omitempty"`
 
 	models.ModelTimeStamps
 }
@@ -152,15 +152,15 @@ func Ancestors(id uint, levelLimit uint) ([]InviteModel, error) {
 
 	var accounts []InviteModel
 	conn.Raw(
-		"WITH RECURSIVE ancestors (id, phone, referrer_id, level) AS\n"+
+		"WITH RECURSIVE ancestors (id, phone, inviter_id, level) AS\n"+
 			"("+
-			"SELECT id, phone, referrer_id, 0 level\n"+
+			"SELECT id, phone, inviter_id, 0 level\n"+
 			"FROM accounts\n"+
 			"WHERE id = ?\n"+
 			"UNION ALL\n"+
-			"SELECT a.id, a.phone, a.referrer_id, an.level+1\n"+
+			"SELECT a.id, a.phone, a.inviter_id, an.level+1\n"+
 			"FROM ancestors AS an JOIN accounts AS a\n"+
-			"ON an.referrer_id = a.id"+
+			"ON an.inviter_id = a.id"+
 			")\n"+
 			"SELECT * FROM ancestors LIMIT ?",
 		id, levelLimit).
@@ -176,15 +176,15 @@ func Descendants(id uint, levelLimit uint) ([]InviteModel, error) {
 	var accounts []InviteModel
 
 	conn.Raw(
-		"WITH RECURSIVE descendants (id, phone, referrer_id, level) AS\n"+
+		"WITH RECURSIVE descendants (id, phone, inviter_id, level) AS\n"+
 			"("+
-			"SELECT id, phone, referrer_id, 0 level\n"+
+			"SELECT id, phone, inviter_id, 0 level\n"+
 			"FROM accounts\n"+
 			"WHERE id = ?\n"+
 			"UNION ALL\n"+
-			"SELECT a.id, a.phone, a.referrer_id, d.level+1\n"+
+			"SELECT a.id, a.phone, a.inviter_id, d.level+1\n"+
 			"FROM descendants AS d JOIN accounts AS a\n"+
-			"ON d.id = a.referrer_id"+
+			"ON d.id = a.inviter_id"+
 			")\n"+
 			"SELECT * FROM descendants WHERE level < ?",
 		id, levelLimit).
