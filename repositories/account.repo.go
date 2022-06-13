@@ -117,6 +117,7 @@ func UpdateProfile(id uint, name string) (User.Model, error) {
 	} else {
 		account.User.Name = name
 		account.User.Email = account.Phone + "@sidooh.net"
+		account.User.Username = account.Phone + "@sidooh.net"
 
 		user, err := User.CreateUser(account.User)
 		if err != nil {
