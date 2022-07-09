@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -18,15 +19,26 @@ type MyCustomClaims struct {
 	jwt.RegisteredClaims
 }
 
-func GenerateToken(user MyCustomClaims) (string, error) {
+func GenerateToken(user MyCustomClaims, validity time.Duration) (string, error) {
 	MySigningKey := []byte(viper.GetString("JWT_KEY"))
+	Iss := viper.GetString("TOKEN_ISSUER")
+	Aud := viper.GetString("TOKEN_AUDIENCE")
+
+	// Ensure validity is not more than a week and not less than 15mins. TODO: To review this
+	if validity.Hours() > 7*24 || validity.Minutes() < 15 {
+		validity = time.Duration(15) * time.Minute
+	}
 
 	claims := MyCustomClaims{
 		user.Id,
 		user.Email,
 		user.Name,
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(15 * time.Minute)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(validity)),
+			Subject:   strconv.Itoa(int(user.Id)),
+			Issuer:    Iss,
+			Audience:  jwt.ClaimStrings{Aud},
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 
@@ -39,7 +51,7 @@ func GenerateToken(user MyCustomClaims) (string, error) {
 	return signedString, nil
 }
 
-func SetToken(signedString string, ctx echo.Context) {
+func SetTokenCookie(signedString string, ctx echo.Context) {
 	env := strings.ToUpper(viper.GetString("APP_ENV"))
 
 	if env != "PRODUCTION" {
@@ -47,9 +59,9 @@ func SetToken(signedString string, ctx echo.Context) {
 	}
 
 	cookie := http.Cookie{
-		Name:     "jwt",
+		Name:     "jwt.sidooh",
 		Value:    signedString,
-		Expires:  time.Now().Add(15 * time.Minute),
+		Expires:  time.Now().Add(30 * 24 * time.Hour),
 		Secure:   secureCookie,
 		HttpOnly: true,
 		Path:     "/api",
@@ -59,7 +71,7 @@ func SetToken(signedString string, ctx echo.Context) {
 
 func InvalidateToken(ctx echo.Context) {
 	cookie := http.Cookie{
-		Name:     "jwt",
+		Name:     "jwt.sidooh",
 		MaxAge:   -1,
 		Secure:   true,
 		HttpOnly: true,

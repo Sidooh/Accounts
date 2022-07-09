@@ -51,6 +51,12 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 	routes.RegisterSignUpHandler(e)
 	routes.RegisterSignOutHandler(e, authMiddlewareFunc)
 
+	// TODO: Review this properly
+	//refreshAuthMiddlewareFunc := middlewares.RefreshTokenAuth(viper.GetString("JWT_KEY"))
+	//routes.RegisterRefreshTokenHandler(e, refreshAuthMiddlewareFunc)
+
+	// TODO: Add client auth endpoints clients/token & clients/refresh-token(token/refresh)?
+
 	routes.RegisterAccountsHandler(e, authMiddlewareFunc)
 	routes.RegisterInvitesHandler(e, authMiddlewareFunc)
 	routes.RegisterUsersHandler(e, authMiddlewareFunc)

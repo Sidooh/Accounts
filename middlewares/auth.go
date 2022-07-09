@@ -10,7 +10,7 @@ import (
 func TokenAuth(secret string) echo.MiddlewareFunc {
 	return middleware.JWTWithConfig(middleware.JWTConfig{
 		SigningKey:  []byte(secret),
-		TokenLookup: "cookie:jwt,header:Authorization",
+		TokenLookup: "header:Authorization",
 		Claims:      &util.MyCustomClaims{},
 		ErrorHandlerWithContext: func(err error, context echo.Context) error {
 			unAuth := errors.NotAuthorizedError{Message: "Not Authorized"}
@@ -21,3 +21,19 @@ func TokenAuth(secret string) echo.MiddlewareFunc {
 		},
 	})
 }
+
+// TODO: refresh token
+//func RefreshTokenAuth(secret string) echo.MiddlewareFunc {
+//	return middleware.JWTWithConfig(middleware.JWTConfig{
+//		SigningKey:  []byte(secret),
+//		TokenLookup: "cookie:jwt.sidooh,header:Authorization",
+//		Claims:      &util.MyCustomClaims{},
+//		ErrorHandlerWithContext: func(err error, context echo.Context) error {
+//			unAuth := errors.NotAuthorizedError{Message: "Not Authorized"}
+//			return context.JSON(
+//				unAuth.Status(),
+//				unAuth.Errors(),
+//			)
+//		},
+//	})
+//}
