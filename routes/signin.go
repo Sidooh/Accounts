@@ -7,8 +7,10 @@ import (
 	"accounts.sidooh/util"
 	"accounts.sidooh/util/constants"
 	"github.com/labstack/echo/v4"
+	"github.com/spf13/viper"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type SignInRequest struct {
@@ -17,7 +19,8 @@ type SignInRequest struct {
 }
 
 type SignInResponse struct {
-	Token string `json:"token"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token,omitempty"`
 }
 
 func RegisterSignInHandler(e *echo.Echo) {
@@ -41,9 +44,14 @@ func RegisterSignInHandler(e *echo.Echo) {
 			Email: user.Email,
 			Name:  user.Name,
 		}
-		token, _ := util.GenerateToken(tokenData)
-		util.SetToken(token, context)
+		validity := time.Duration(viper.GetInt("ACCESS_TOKEN_VALIDITY")) * time.Minute
+		accessToken, _ := util.GenerateToken(tokenData, validity)
 
-		return context.JSON(http.StatusOK, SignInResponse{Token: token})
+		//validity = time.Duration(viper.GetInt("REFRESH_TOKEN_VALIDITY"))
+		//refreshToken, _ := util.GenerateToken(util.MyCustomClaims{Id: user.ID}, validity)
+
+		//util.SetTokenCookie(refreshToken, context)
+
+		return context.JSON(http.StatusOK, SignInResponse{AccessToken: accessToken})
 	})
 }

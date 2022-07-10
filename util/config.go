@@ -22,7 +22,7 @@ func SetupConfig(path string) {
 	// Enable VIPER to read Environment Variables
 	viper.AutomaticEnv()
 	//
-	//viper.SetDefault("JWT_KEY", random.String(32))
+	viper.SetDefault("INVITE_EXPIRY", 48)
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
