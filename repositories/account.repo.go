@@ -110,25 +110,33 @@ func UpdateProfile(id uint, name string) (User.Model, error) {
 		return User.Model{}, errors.New("invalid credentials")
 	}
 
-	if account.User.ID != 0 {
+	switch account := account.(type) {
+	case Account.ModelWithUser:
+
 		account.User.Name = name
 
 		account.User.Save()
-	} else {
-		account.User.Name = name
-		account.User.Email = account.Phone + "@sidooh.net"
-		account.User.Username = account.Phone
 
-		user, err := User.CreateUser(account.User)
+		return account.User, nil
+
+	case Account.Model:
+		var user = User.Model{
+			Name:     name,
+			Username: account.Phone,
+			Email:    account.Phone + "@sidooh.net",
+		}
+
+		user, err := User.CreateUser(user)
 		if err != nil {
 			return User.Model{}, err
 		}
 
-		account.User = user
 		account.UserID = user.ID
 		account.Save()
+
+		return user, nil
+
 	}
 
-	return account.User, nil
-
+	return User.Model{}, errors.New("failed to update profile")
 }

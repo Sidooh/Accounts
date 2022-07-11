@@ -35,6 +35,10 @@ type AncestorsOrDescendantRequest struct {
 	LevelLimit string `query:"level_limit" validate:"omitempty,number,min=1,max=5"`
 }
 
+type AccountsRequest struct {
+	WithUser string `query:"with_user" validate:"omitempty,oneof=true false"`
+}
+
 type AccountByIdRequest struct {
 	Id       string `param:"id" validate:"required,numeric,min=1"`
 	WithUser string `query:"with_user" validate:"omitempty,oneof=true false"`
@@ -52,13 +56,28 @@ type UpdateProfileRequest struct {
 
 func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	e.GET(constants.API_URL+"/accounts", func(context echo.Context) error {
-
-		accounts, err := Account.All()
-		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+		request := new(AccountsRequest)
+		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
+			return err
 		}
 
-		return context.JSON(http.StatusOK, accounts)
+		if request.WithUser == "true" {
+			accounts, err := Account.AllWithUser()
+			if err != nil {
+				return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			}
+
+			return context.JSON(http.StatusOK, accounts)
+
+		} else {
+			accounts, err := Account.All()
+			if err != nil {
+				return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			}
+
+			return context.JSON(http.StatusOK, accounts)
+
+		}
 
 	}, authMiddleware)
 

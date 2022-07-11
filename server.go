@@ -22,6 +22,7 @@ func main() {
 
 	db.Init()
 	//TODO: Ensure in production this doesn't mess up db
+	// TODO: Add a script file that accepts fresh migrate args from cmd
 	_ = db.Connection().AutoMigrate(
 		user.Model{},
 		account.ModelWithUser{},
