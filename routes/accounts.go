@@ -54,6 +54,7 @@ type UpdateProfileRequest struct {
 	Name string `json:"name" validate:"required,min=3"`
 }
 
+//TODO: Improve error handling, statuses, messages etc...
 func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	e.GET(constants.API_URL+"/accounts", func(context echo.Context) error {
 		request := new(AccountsRequest)
@@ -89,7 +90,12 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		id, err := strconv.ParseUint(request.Id, 10, 32)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
+			//return echo.NewHTTPError(422, errors.ValidationError{
+			//	Value:   request.Id,
+			//	Message: "valid id is required",
+			//	Param:   "id",
+			//})
 		}
 
 		if request.WithUser == "true" {
@@ -121,7 +127,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		// TODO: Move country to config
 		phone, err := util.GetPhoneByCountry("KE", request.Phone)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
 
 		if request.WithUser == "true" {
@@ -150,7 +156,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		phone, err := util.GetPhoneByCountry("KE", request.Phone)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
 
 		account, err := repositories.Create(Account.Model{
@@ -175,7 +181,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		id, err := strconv.ParseUint(context.Param("id"), 10, 32)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
 
 		err = repositories.CheckPin(uint(id), strings.TrimSpace(request.Pin))
@@ -197,7 +203,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		id, err := strconv.ParseUint(context.Param("id"), 10, 32)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
 
 		err = repositories.SetPin(uint(id), strings.TrimSpace(request.Pin))
@@ -248,7 +254,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		id, err := strconv.ParseUint(request.Id, 10, 32)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
 
 		levelLimit := viper.GetUint64("INVITE_LEVEL_LIMIT")
@@ -256,7 +262,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		if request.LevelLimit != "" {
 			requestLevelLimit, err := strconv.ParseUint(request.LevelLimit, 10, 8)
 			if err != nil {
-				return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+				return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
 			}
 			if requestLevelLimit < levelLimit {
 				levelLimit = requestLevelLimit
@@ -280,14 +286,14 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		id, err := strconv.ParseUint(request.Id, 10, 32)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
 
 		levelLimit := viper.GetUint64("INVITE_LEVEL_LIMIT")
 		if request.LevelLimit != "" {
 			requestLevelLimit, err := strconv.ParseUint(request.LevelLimit, 10, 8)
 			if err != nil {
-				return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+				return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
 			}
 			if requestLevelLimit < levelLimit {
 				levelLimit = requestLevelLimit
@@ -312,7 +318,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		id, err := strconv.ParseUint(context.Param("id"), 10, 32)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
 
 		err = repositories.HasPin(uint(id))
@@ -335,7 +341,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		id, err := strconv.ParseUint(context.Param("id"), 10, 32)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
 
 		user, err := repositories.UpdateProfile(uint(id), request.Name)

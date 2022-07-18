@@ -94,23 +94,20 @@ func ById(id uint) (Model, error) {
 }
 
 func ByIdWithUser(id uint) (interface{}, error) {
-	accountWithUser := ModelWithUser{}
+	accountWithUser := new(ModelWithUser)
 
 	result := db.Connection().Joins("User").First(&accountWithUser, id)
 	if result.Error != nil {
 		return accountWithUser, result.Error
 	}
 
-	var account interface{}
 	if accountWithUser.UserID == 0 {
 		accountModel := new(Model)
 		util.ConvertStruct(accountWithUser, accountModel)
-		account = accountModel
-	} else {
-		account = accountWithUser
+		return accountModel, nil
 	}
 
-	return account, nil
+	return accountWithUser, nil
 }
 
 func ByPhone(phone string) (Model, error) {

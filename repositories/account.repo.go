@@ -111,7 +111,7 @@ func UpdateProfile(id uint, name string) (User.Model, error) {
 	}
 
 	switch account := account.(type) {
-	case Account.ModelWithUser:
+	case *Account.ModelWithUser:
 
 		account.User.Name = name
 
@@ -119,7 +119,7 @@ func UpdateProfile(id uint, name string) (User.Model, error) {
 
 		return account.User, nil
 
-	case Account.Model:
+	case *Account.Model:
 		var user = User.Model{
 			Name:     name,
 			Username: account.Phone,
@@ -136,6 +136,8 @@ func UpdateProfile(id uint, name string) (User.Model, error) {
 
 		return user, nil
 
+	default:
+		fmt.Errorf("I don't know about type %T!\n", account)
 	}
 
 	return User.Model{}, errors.New("failed to update profile")
