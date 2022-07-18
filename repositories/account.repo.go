@@ -8,6 +8,7 @@ import (
 	"accounts.sidooh/util/constants"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 func Create(a Account.Model) (Account.Model, error) {
@@ -113,9 +114,7 @@ func UpdateProfile(id uint, name string) (User.Model, error) {
 	switch account := account.(type) {
 	case *Account.ModelWithUser:
 
-		account.User.Name = name
-
-		account.User.Save()
+		account.User.Update("name", name)
 
 		return account.User, nil
 
@@ -131,13 +130,12 @@ func UpdateProfile(id uint, name string) (User.Model, error) {
 			return User.Model{}, err
 		}
 
-		account.UserID = user.ID
-		account.Save()
+		account.Update("user_id", strconv.Itoa(int(user.ID)))
 
 		return user, nil
 
 	default:
-		fmt.Errorf("I don't know about type %T!\n", account)
+		fmt.Printf("I don't know about type %T!\n", account)
 	}
 
 	return User.Model{}, errors.New("failed to update profile")
