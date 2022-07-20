@@ -14,9 +14,9 @@ type Model struct {
 	models.ModelID
 
 	Name            string        `json:"name" gorm:"size:64"`
-	Username        string        `json:"username" gorm:"uniqueIndex; size:16"`
-	IdNumber        string        `json:"id_number" gorm:"size:16"`
-	Status          string        `json:"status" gorm:"size:16"`
+	Username        string        `json:"username,omitempty" gorm:"uniqueIndex; size:16"`
+	IdNumber        string        `json:"id_number,omitempty" gorm:"size:16"`
+	Status          string        `json:"status,omitempty" gorm:"size:16"`
 	Email           string        `json:"email" gorm:"uniqueIndex; size:256; not null"`
 	EmailVerifiedAt *sqltime.Time `gorm:"type:timestamp" json:"-"`
 	Password        string        `json:"-"`

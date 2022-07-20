@@ -8,6 +8,7 @@ import (
 	"accounts.sidooh/util/constants"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 func Create(a Account.Model) (Account.Model, error) {
@@ -110,25 +111,32 @@ func UpdateProfile(id uint, name string) (User.Model, error) {
 		return User.Model{}, errors.New("invalid credentials")
 	}
 
-	if account.User.ID != 0 {
-		account.User.Name = name
+	switch account := account.(type) {
+	case *Account.ModelWithUser:
 
-		account.User.Save()
-	} else {
-		account.User.Name = name
-		account.User.Email = account.Phone + "@sidooh.net"
-		account.User.Username = account.Phone
+		account.User.Update("name", name)
 
-		user, err := User.CreateUser(account.User)
+		return account.User, nil
+
+	case *Account.Model:
+		var user = User.Model{
+			Name:     name,
+			Username: account.Phone,
+			Email:    account.Phone + "@sidooh.net",
+		}
+
+		user, err := User.CreateUser(user)
 		if err != nil {
 			return User.Model{}, err
 		}
 
-		account.User = user
-		account.UserID = user.ID
-		account.Save()
+		account.Update("user_id", strconv.Itoa(int(user.ID)))
+
+		return user, nil
+
+	default:
+		fmt.Printf("I don't know about type %T!\n", account)
 	}
 
-	return account.User, nil
-
+	return User.Model{}, errors.New("failed to update profile")
 }

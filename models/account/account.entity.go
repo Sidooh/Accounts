@@ -4,6 +4,7 @@ import (
 	"accounts.sidooh/db"
 	"accounts.sidooh/models"
 	"accounts.sidooh/models/user"
+	"accounts.sidooh/util"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -52,6 +53,27 @@ func All() ([]Model, error) {
 	return accounts, nil
 }
 
+func AllWithUser() ([]interface{}, error) {
+	var accountsWithUsers []ModelWithUser
+	result := db.Connection().Joins("User").Find(&accountsWithUsers)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	var accounts []interface{}
+	for _, accountWithUser := range accountsWithUsers {
+		if accountWithUser.UserID == 0 {
+			accountModel := new(Model)
+			util.ConvertStruct(accountWithUser, accountModel)
+			accounts = append(accounts, accountModel)
+		} else {
+			accounts = append(accounts, accountWithUser)
+		}
+	}
+
+	return accounts, nil
+}
+
 // TODO: Check whether using pointers here saves memory
 func Create(a Model) (Model, error) {
 	_, err := ByPhone(a.Phone)
@@ -71,15 +93,21 @@ func ById(id uint) (Model, error) {
 	return find("id = ?", id)
 }
 
-func ByIdWithUser(id uint) (ModelWithUser, error) {
-	account := ModelWithUser{}
+func ByIdWithUser(id uint) (interface{}, error) {
+	accountWithUser := new(ModelWithUser)
 
-	result := db.Connection().Joins("User").First(&account, id)
+	result := db.Connection().Joins("User").First(&accountWithUser, id)
 	if result.Error != nil {
-		return account, result.Error
+		return accountWithUser, result.Error
 	}
 
-	return account, nil
+	if accountWithUser.UserID == 0 {
+		accountModel := new(Model)
+		util.ConvertStruct(accountWithUser, accountModel)
+		return accountModel, nil
+	}
+
+	return accountWithUser, nil
 }
 
 func ByPhone(phone string) (Model, error) {
