@@ -1,4 +1,4 @@
-FROM golang:1.17-bullseye as build
+FROM golang:1.18 as build
 
 WORKDIR /app
 
@@ -8,15 +8,14 @@ RUN go mod download
 
 COPY ./ ./
 
-RUN go build -o /server
+RUN CGO_ENABLED=0 go build -o /server
 
 
-FROM gcr.io/distroless/base-debian11
+FROM gcr.io/distroless/static-debian11
 
 COPY --from=build /server /server
 
-# USER nonroot:nonroot
-# RUN echo $USER
+USER nonroot:nonroot
 
 EXPOSE 8000
 
