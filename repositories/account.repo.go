@@ -1,49 +1,37 @@
 package repositories
 
 import (
-	"accounts.sidooh/db"
 	Account "accounts.sidooh/models/account"
-	Referral "accounts.sidooh/models/referral"
+	Invite "accounts.sidooh/models/invite"
+	User "accounts.sidooh/models/user"
 	"accounts.sidooh/util"
 	"accounts.sidooh/util/constants"
-	"database/sql"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
-var datastore = new(db.DB)
-
-func Construct(db *db.DB) {
-	datastore = db
-}
-
 func Create(a Account.Model) (Account.Model, error) {
-	//	Get Referral if exists
-	referral, err := Referral.UnexpiredByPhone(datastore, a.Phone)
+	//	Get Invite if exists
+	invite, err := Invite.UnexpiredByPhone(a.Phone)
 	if err != nil {
-		fmt.Println("Referral not found for", a.Phone)
+		fmt.Println("Invite not found for", a.Phone)
 	} else {
-		a.ReferrerID = sql.NullInt32{
-			Int32: int32(referral.AccountID),
-			Valid: true,
-		}
+		a.InviterID = invite.InviterID
 	}
 
 	//	Create Account
-	account, err := Account.Create(datastore, a)
+	account, err := Account.Create(a)
 	if err != nil {
 		return a, err
 	}
 
-	//	Update referral
-	if referral.ID != 0 {
+	//	Update invite
+	if invite.ID != 0 {
 
-		referral.RefereeID = sql.NullInt32{
-			Int32: int32(account.ID),
-			Valid: true,
-		}
-		referral.Status = constants.ACTIVE
-		referral.Save(datastore)
+		invite.AccountID = account.ID
+		invite.Status = constants.ACTIVE
+		invite.Save()
 	}
 
 	return account, nil
@@ -51,7 +39,7 @@ func Create(a Account.Model) (Account.Model, error) {
 
 func CheckPin(id uint, pin string) error {
 	//	Get Account
-	account, err := Account.ById(datastore, id)
+	account, err := Account.ById(id)
 	if err != nil {
 		return errors.New("invalid credentials")
 	}
@@ -82,7 +70,7 @@ func CheckPin(id uint, pin string) error {
 
 func SetPin(id uint, pin string) error {
 	//	Get Account
-	account, err := Account.ById(datastore, id)
+	account, err := Account.ById(id)
 	if err != nil {
 		return errors.New("account not found")
 	}
@@ -93,10 +81,62 @@ func SetPin(id uint, pin string) error {
 		return errors.New("unable to set pin")
 	}
 
-	result := account.Update(datastore, "pin", hashedPin)
+	result := account.Update("pin", hashedPin)
 	if result.Error != nil {
 		return errors.New("unable to set pin")
 	}
 
 	return nil
+}
+
+func HasPin(id uint) error {
+	//	Get Account
+	account, err := Account.ById(id)
+	if err != nil {
+		return errors.New("invalid credentials")
+	}
+
+	//	Check Pin exists
+	if account.Pin.Valid {
+		return nil
+	}
+
+	return errors.New("invalid credentials")
+}
+
+func UpdateProfile(id uint, name string) (User.Model, error) {
+	//	Get Account
+	account, err := Account.ByIdWithUser(id)
+	if err != nil {
+		return User.Model{}, errors.New("invalid credentials")
+	}
+
+	switch account := account.(type) {
+	case *Account.ModelWithUser:
+
+		account.User.Update("name", name)
+
+		return account.User, nil
+
+	case *Account.Model:
+		var user = User.Model{
+			Name:     name,
+			Username: account.Phone,
+			Email:    account.Phone + "@sidooh.net",
+		}
+
+		user, err := User.CreateUser(user)
+		if err != nil {
+			return User.Model{}, err
+		}
+
+		account.Update("user_id", strconv.Itoa(int(user.ID)))
+
+		return user, nil
+
+	default:
+		fmt.Printf("I don't know about type %T!\n", account)
+	}
+
+	return User.Model{}, errors.New("failed to update profile")
 }

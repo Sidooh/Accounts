@@ -1,11 +1,12 @@
 package models
 
-import (
-	"github.com/SamuelTissot/sqltime"
-)
+import "github.com/SamuelTissot/sqltime"
 
-type Model struct {
-	ID        uint         `gorm:"primaryKey" json:"id"`
+type ModelID struct {
+	ID uint `gorm:"primaryKey" json:"id"`
+}
+
+type ModelTimeStamps struct {
 	CreatedAt sqltime.Time `gorm:"type:timestamp" json:"-"`
 	UpdatedAt sqltime.Time `gorm:"type:timestamp" json:"-"`
 }

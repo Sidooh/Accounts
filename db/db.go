@@ -19,8 +19,8 @@ type DB struct {
 
 var db *DB
 
-func NewConnection() *DB {
-	return db
+func Connection() *gorm.DB {
+	return db.Conn
 }
 
 func Init() {
@@ -53,7 +53,6 @@ func Init() {
 			Logger: newLogger,
 		}
 
-		fmt.Println(dsn)
 		gormDb, err = gorm.Open(mysql.Open(dsn), config)
 	}
 

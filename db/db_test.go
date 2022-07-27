@@ -8,7 +8,8 @@ import (
 func TestNewConnection(t *testing.T) {
 	viper.Set("APP_ENV", "TEST")
 
-	conn := NewConnection().Conn
+	Init()
+	conn := Connection()
 
 	_, err := conn.DB()
 

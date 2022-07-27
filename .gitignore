@@ -27,3 +27,9 @@ gen
 **/test.db
 .env
 */**.log
+
+
+y.hide
+accounts.sidooh
+cloud_sql_proxy
+.run

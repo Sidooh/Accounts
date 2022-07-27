@@ -18,6 +18,6 @@ COPY --from=build /server /server
 # USER nonroot:nonroot
 # RUN echo $USER
 
-EXPOSE 3000
+EXPOSE 8000
 
 ENTRYPOINT [ "/server" ]

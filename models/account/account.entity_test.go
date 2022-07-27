@@ -11,14 +11,13 @@ import (
 	"time"
 )
 
-var datastore = new(db.DB)
-
 func TestMain(m *testing.M) {
 	viper.Set("APP_ENV", "TEST")
 
-	datastore = db.NewConnection()
+	db.Init()
+	conn := db.Connection()
 
-	err := datastore.Conn.AutoMigrate(&Model{})
+	err := conn.AutoMigrate(&Model{})
 	if err != nil {
 		panic(err)
 	}
@@ -31,7 +30,7 @@ func CreateRandomAccount(t *testing.T, phone string) Model {
 		Phone: phone,
 	}
 
-	account, err := Create(datastore, arg)
+	account, err := Create(arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, account)
 
@@ -43,11 +42,17 @@ func CreateRandomAccount(t *testing.T, phone string) Model {
 	return account
 }
 
+func refreshDatabase() {
+	//Start clean slate
+	conn := db.Connection()
+	conn.Where("1 = 1").Delete(&Model{})
+}
+
 func TestAll(t *testing.T) {
 	account1 := CreateRandomAccount(t, util.RandomPhone())
 	account2 := CreateRandomAccount(t, util.RandomPhone())
 
-	accounts, err := All(datastore)
+	accounts, err := All()
 	require.NoError(t, err)
 	require.NotEmpty(t, accounts)
 	require.GreaterOrEqual(t, len(accounts), 2)
@@ -62,7 +67,7 @@ func TestCreate(t *testing.T) {
 
 func TestById(t *testing.T) {
 	account1 := CreateRandomAccount(t, util.RandomPhone())
-	account2, err := ById(datastore, account1.ID)
+	account2, err := ById(account1.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, account2)
 
@@ -76,7 +81,7 @@ func TestById(t *testing.T) {
 
 func TestByPhone(t *testing.T) {
 	account1 := CreateRandomAccount(t, util.RandomPhone())
-	account2, err := ByPhone(datastore, account1.Phone)
+	account2, err := ByPhone(account1.Phone)
 	require.NoError(t, err)
 	require.NotEmpty(t, account2)
 
@@ -92,12 +97,38 @@ func TestUpdate(t *testing.T) {
 	account := CreateRandomAccount(t, util.RandomPhone())
 	require.NotEmpty(t, account)
 
-	result := account.Update(datastore, "pin", "new_pin")
+	result := account.Update("pin", "new_pin")
 	require.NoError(t, result.Error)
 
 	require.Equal(t, account.Pin, sql.NullString{String: "new_pin", Valid: true})
 	require.WithinDuration(t, account.UpdatedAt.Time, account.UpdatedAt.Time, time.Second)
 
-	result = account.Update(datastore, "pins", "new_pin")
+	result = account.Update("pins", "new_pin")
 	require.Error(t, result.Error)
+}
+
+func TestSearchByPhone(t *testing.T) {
+	refreshDatabase()
+
+	account1 := CreateRandomAccount(t, "714611696")
+	account2 := CreateRandomAccount(t, "780611696")
+
+	accounts, err := SearchByPhone("714")
+	require.NoError(t, err)
+	require.NotEmpty(t, accounts)
+	require.Equal(t, 1, len(accounts))
+
+	require.Equal(t, accounts[0], account1)
+
+	accounts, err = SearchByPhone("6116")
+	require.NoError(t, err)
+	require.NotEmpty(t, accounts)
+	require.Equal(t, 2, len(accounts))
+
+	require.Equal(t, accounts[1], account2)
+
+	accounts, err = SearchByPhone("3")
+	require.NoError(t, err)
+	require.Empty(t, accounts)
+
 }

@@ -4,7 +4,7 @@ import (
 	"accounts.sidooh/errors"
 	"accounts.sidooh/middlewares"
 	User "accounts.sidooh/models/user"
-	"accounts.sidooh/util"
+	"accounts.sidooh/util/constants"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strings"
@@ -17,12 +17,12 @@ type SignUpRequest struct {
 }
 
 func RegisterSignUpHandler(e *echo.Echo) {
-	go e.POST("/api/users/signup", func(context echo.Context) error {
-		return handlerFunc(context)
+	go e.POST(constants.API_URL+"/users/signup", func(context echo.Context) error {
+		return signup(context)
 	})
 }
 
-func handlerFunc(context echo.Context) error {
+func signup(context echo.Context) error {
 	request := new(SignUpRequest)
 	if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 		return err
@@ -33,7 +33,7 @@ func handlerFunc(context echo.Context) error {
 		username = request.Email
 	}
 
-	user, err := User.CreateUser(User.User{
+	user, err := User.CreateUser(User.Model{
 		Email:    request.Email,
 		Password: strings.TrimSpace(request.Password),
 		Username: username,
@@ -42,12 +42,13 @@ func handlerFunc(context echo.Context) error {
 		return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 	}
 
-	tokenData := util.MyCustomClaims{
-		Id:    user.ID,
-		Email: user.Email,
-	}
-	token, _ := util.GenerateToken(tokenData)
-	util.SetToken(token, context)
+	// TODO: should user have to login after signing up?, I am thinking yes!
+	//tokenData := util.MyCustomClaims{
+	//	Id:    user.ID,
+	//	Email: user.Email,
+	//}
+	//token, _ := util.GenerateToken(tokenData)
+	//util.SetToken(token, context)
 
 	return context.JSON(http.StatusCreated, user)
 }
