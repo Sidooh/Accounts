@@ -17,7 +17,7 @@ type SignUpRequest struct {
 }
 
 func RegisterSignUpHandler(e *echo.Echo) {
-	go e.POST(constants.API_URL+"/users/signup", func(context echo.Context) error {
+	e.POST(constants.API_URL+"/users/signup", func(context echo.Context) error {
 		return signup(context)
 	})
 }

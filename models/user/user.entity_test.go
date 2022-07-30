@@ -125,6 +125,7 @@ func TestSearchByEmail(t *testing.T) {
 	user1, err := createUser(arg)
 
 	arg = Model{
+		Username: util.RandomName(),
 		Email:    "a@a.a",
 		Password: password,
 	}
