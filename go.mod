@@ -13,8 +13,8 @@ require (
 	github.com/tryvium-travels/memongo v0.3.1
 	github.com/ttacon/libphonenumber v1.2.1
 	go.mongodb.org/mongo-driver v1.7.4
-	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
-	golang.org/x/net v0.0.0-20210913180222-943fd674d43e
+	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
+	golang.org/x/net v0.0.0-20211008194852-3b03d305991f
 	golang.org/x/time v0.0.0-20201208040808-7e3f01d25324
 	gorm.io/driver/mysql v1.2.3
 	gorm.io/driver/sqlite v1.2.6
@@ -25,6 +25,7 @@ require (
 	github.com/acobaugh/osrelease v0.0.0-20181218015638-a93a0a55a249 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
+	github.com/getsentry/sentry-go v0.13.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect

@@ -33,5 +33,6 @@ func main() {
 
 	echoServer, port, s := server.Setup()
 
+	// TODO: Review using H2C - cleartext server
 	echoServer.Logger.Fatal(echoServer.StartH2CServer(":"+port, s))
 }
