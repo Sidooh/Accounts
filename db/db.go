@@ -64,3 +64,17 @@ func Init() {
 	db = &DB{Conn: gormDb}
 	fmt.Println("Connected to Database")
 }
+
+func Close() {
+	s, err := db.Conn.DB()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = s.Close()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println("Closed Database")
+}

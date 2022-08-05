@@ -122,6 +122,7 @@ func UpdateProfile(id uint, name string) (User.Model, error) {
 		var user = User.Model{
 			Name:     name,
 			Username: account.Phone,
+			IdNumber: account.Phone,
 			Email:    account.Phone + "@sidooh.net",
 		}
 

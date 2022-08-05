@@ -21,6 +21,7 @@ func main() {
 	}
 
 	db.Init()
+	defer db.Close()
 	//TODO: Ensure in production this doesn't mess up db
 	// TODO: Add a script file that accepts fresh migrate args from cmd
 	_ = db.Connection().AutoMigrate(
