@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	customErrors "accounts.sidooh/errors"
+	"accounts.sidooh/util"
 	"fmt"
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
@@ -45,7 +46,7 @@ func (cv CustomValidator) Validate(i interface{}) error {
 		}
 
 		// Optionally, you could return the error to give each route more control over the status code
-		return echo.NewHTTPError(validationErrors.Status(), validationErrors.Errors())
+		return echo.NewHTTPError(validationErrors.Status(), util.ValidationErrorResponse(validationErrors.ValidationErrors))
 	}
 	return nil
 }

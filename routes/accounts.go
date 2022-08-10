@@ -15,7 +15,7 @@ import (
 )
 
 type CreateAccountRequest struct {
-	Phone string `json:"phone" validate:"required,numeric"`
+	Phone string `json:"phone" validate:"required,numeric,min=9"`
 }
 
 type CheckPinRequest struct {
@@ -40,13 +40,13 @@ type AccountsRequest struct {
 }
 
 type AccountByIdRequest struct {
-	Id       string `param:"id" validate:"required,numeric,min=1"`
-	WithUser string `query:"with_user" validate:"omitempty,oneof=true false"`
+	AccountsRequest
+	Id string `param:"id" validate:"required,numeric,min=1"`
 }
 
 type AccountByPhoneRequest struct {
-	Phone    string `param:"phone" validate:"required,numeric,min=9"`
-	WithUser string `query:"with_user" validate:"omitempty,oneof=true false"`
+	Phone string `param:"phone" validate:"required,numeric,min=9"`
+	AccountsRequest
 }
 
 type UpdateProfileRequest struct {
@@ -62,23 +62,12 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return err
 		}
 
-		if request.WithUser == "true" {
-			accounts, err := Account.AllWithUser()
-			if err != nil {
-				return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
-			}
-
-			return context.JSON(http.StatusOK, accounts)
-
-		} else {
-			accounts, err := Account.All()
-			if err != nil {
-				return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
-			}
-
-			return context.JSON(http.StatusOK, accounts)
-
+		accounts, err := repositories.GetAccounts(request.WithUser == "true")
+		if err != nil {
+			return util.HandleErrorResponse(context, err)
 		}
+
+		return util.HandleSuccessResponse(context, accounts)
 
 	}, authMiddleware)
 
@@ -90,31 +79,15 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		id, err := strconv.ParseUint(request.Id, 10, 32)
 		if err != nil {
-			return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
-			//return echo.NewHTTPError(422, errors.ValidationError{
-			//	Value:   request.Id,
-			//	Message: "valid id is required",
-			//	Param:   "id",
-			//})
+			return context.JSON(http.StatusUnprocessableEntity, util.IdValidationErrorResponse(request.Id))
 		}
 
-		if request.WithUser == "true" {
-			account, err := Account.ByIdWithUser(uint(id))
-			if err != nil {
-				return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
-			}
-
-			return context.JSON(http.StatusOK, account)
-
-		} else {
-			account, err := Account.ById(uint(id))
-			if err != nil {
-				return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
-			}
-
-			return context.JSON(http.StatusOK, account)
-
+		account, err := repositories.GetAccountById(uint(id), request.WithUser == "true")
+		if err != nil {
+			return util.HandleErrorResponse(context, err)
 		}
+
+		return util.HandleSuccessResponse(context, account)
 
 	}, authMiddleware)
 
@@ -127,24 +100,15 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		// TODO: Move country to config
 		phone, err := util.GetPhoneByCountry("KE", request.Phone)
 		if err != nil {
-			return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
+			return context.JSON(http.StatusUnprocessableEntity, util.PhoneValidationErrorResponse(request.Phone))
 		}
 
-		if request.WithUser == "true" {
-			account, err := Account.ByPhoneWithUser(phone)
-			if err != nil {
-				return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
-			}
-
-			return context.JSON(http.StatusOK, account)
-		} else {
-			account, err := Account.ByPhone(phone)
-			if err != nil {
-				return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
-			}
-
-			return context.JSON(http.StatusOK, account)
+		account, err := repositories.GetAccountByPhone(phone, request.WithUser == "true")
+		if err != nil {
+			return util.HandleErrorResponse(context, err)
 		}
+
+		return util.HandleSuccessResponse(context, account)
 
 	}, authMiddleware)
 
@@ -224,10 +188,10 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		account, err := Account.SearchByIdOrPhone(request.Search)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return util.HandleErrorResponse(context, err)
 		}
 
-		return context.JSON(http.StatusOK, account)
+		return util.HandleSuccessResponse(context, account)
 
 	}, authMiddleware)
 
@@ -239,10 +203,10 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		accounts, err := Account.SearchByPhone(request.Search)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return util.HandleErrorResponse(context, err)
 		}
 
-		return context.JSON(http.StatusOK, accounts)
+		return util.HandleSuccessResponse(context, accounts)
 
 	}, authMiddleware)
 
@@ -254,7 +218,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		id, err := strconv.ParseUint(request.Id, 10, 32)
 		if err != nil {
-			return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
+			return context.JSON(http.StatusUnprocessableEntity, util.IdValidationErrorResponse(request.Id))
 		}
 
 		levelLimit := viper.GetUint64("INVITE_LEVEL_LIMIT")
@@ -262,7 +226,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		if request.LevelLimit != "" {
 			requestLevelLimit, err := strconv.ParseUint(request.LevelLimit, 10, 8)
 			if err != nil {
-				return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
+				return util.HandleErrorResponse(context, err)
 			}
 			if requestLevelLimit < levelLimit {
 				levelLimit = requestLevelLimit
@@ -271,10 +235,10 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		account, err := Account.Ancestors(uint(id), uint(levelLimit+1))
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return util.HandleErrorResponse(context, err)
 		}
 
-		return context.JSON(http.StatusOK, account)
+		return util.HandleSuccessResponse(context, account)
 
 	}, authMiddleware)
 
@@ -286,14 +250,14 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		id, err := strconv.ParseUint(request.Id, 10, 32)
 		if err != nil {
-			return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
+			return context.JSON(http.StatusUnprocessableEntity, util.IdValidationErrorResponse(request.Id))
 		}
 
 		levelLimit := viper.GetUint64("INVITE_LEVEL_LIMIT")
 		if request.LevelLimit != "" {
 			requestLevelLimit, err := strconv.ParseUint(request.LevelLimit, 10, 8)
 			if err != nil {
-				return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
+				return util.HandleErrorResponse(context, err)
 			}
 			if requestLevelLimit < levelLimit {
 				levelLimit = requestLevelLimit
@@ -302,10 +266,10 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		account, err := Account.Descendants(uint(id), uint(levelLimit+1))
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return util.HandleErrorResponse(context, err)
 		}
 
-		return context.JSON(http.StatusOK, account)
+		return util.HandleSuccessResponse(context, account)
 
 	}, authMiddleware)
 
@@ -318,17 +282,15 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		id, err := strconv.ParseUint(context.Param("id"), 10, 32)
 		if err != nil {
-			return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
+			return context.JSON(http.StatusUnprocessableEntity, util.IdValidationErrorResponse(request.Id))
 		}
 
-		err = repositories.HasPin(uint(id))
-		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+		exists := repositories.HasPin(uint(id))
+		if exists {
+			return util.HandleSuccessResponse(context, true)
 		}
 
-		return context.JSON(http.StatusOK, map[string]bool{
-			"message": true,
-		})
+		return context.JSON(http.StatusBadRequest, util.ErrorResponse("", false))
 
 	}, authMiddleware)
 
@@ -341,15 +303,15 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		id, err := strconv.ParseUint(context.Param("id"), 10, 32)
 		if err != nil {
-			return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
+			return context.JSON(http.StatusUnprocessableEntity, util.IdValidationErrorResponse(request.Id))
 		}
 
 		user, err := repositories.UpdateProfile(uint(id), request.Name)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return util.HandleErrorResponse(context, err)
 		}
 
-		return context.JSON(http.StatusOK, user)
+		return util.HandleSuccessResponse(context, user)
 
 	}, authMiddleware)
 
