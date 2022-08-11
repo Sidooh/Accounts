@@ -36,7 +36,7 @@ type InviteModel struct {
 	Level int `json:"level"`
 }
 
-func (Model) TableName() string {
+func (*Model) TableName() string {
 	return "accounts"
 }
 func (ModelWithUser) TableName() string {
@@ -194,6 +194,10 @@ func Ancestors(id uint, levelLimit uint) ([]InviteModel, error) {
 		id, levelLimit).
 		Scan(&accounts)
 
+	if len(accounts) == 0 {
+		return nil, errors.New("record not found")
+	}
+
 	return accounts, nil
 }
 
@@ -217,6 +221,10 @@ func Descendants(id uint, levelLimit uint) ([]InviteModel, error) {
 			"SELECT * FROM descendants WHERE level < ?",
 		id, levelLimit).
 		Scan(&accounts)
+
+	if len(accounts) == 0 {
+		return nil, errors.New("record not found")
+	}
 
 	return accounts, nil
 }

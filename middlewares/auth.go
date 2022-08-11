@@ -14,10 +14,12 @@ func TokenAuth(secret string) echo.MiddlewareFunc {
 		Claims:      &util.MyCustomClaims{},
 		ErrorHandlerWithContext: func(err error, context echo.Context) error {
 			unAuth := errors.NotAuthorizedError{Message: "Not Authorized"}
-			return context.JSON(
-				unAuth.Status(),
-				unAuth.Errors(),
-			)
+			//return context.JSON(
+			//	unAuth.Status(),
+			//	unAuth.Errors(),
+			//)
+
+			return context.JSON(unAuth.Status(), util.UnauthenticatedErrorResponse())
 		},
 	})
 }
