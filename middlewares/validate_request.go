@@ -8,22 +8,11 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func BindAndValidateRequest(context echo.Context, request interface{}) error {
-	if err := context.Bind(request); err != nil {
-		return err
-	}
-
-	if err := context.Validate(request); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 type CustomValidator struct {
 	Validator *validator.Validate
 }
 
+// TODO: Should this be a pointer method?
 func (cv CustomValidator) Validate(i interface{}) error {
 	if err := cv.Validator.Struct(i); err != nil {
 
@@ -50,3 +39,23 @@ func (cv CustomValidator) Validate(i interface{}) error {
 	}
 	return nil
 }
+
+func BindAndValidateRequest(context echo.Context, request interface{}) error {
+	if err := context.Bind(request); err != nil {
+		return err
+	}
+
+	if err := context.Validate(request); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// TODO: Review validating request using generic
+//func ValidateRequest[T any](context echo.Context, v T) error {
+//	request := v
+//	if err := BindAndValidateRequest(context, request); err != nil {
+//		request.Id = context.Param("id")
+//	}
+//}

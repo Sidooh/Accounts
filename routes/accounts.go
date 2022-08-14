@@ -72,11 +72,18 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	}, authMiddleware)
 
 	e.GET(constants.API_URL+"/accounts/:id", func(context echo.Context) error {
+		// TODO: Review validating request using generic
+		//err := middlewares.ValidateRequest(context, new(AccountByIdRequest))
+		//if err != nil {
+		//	return err
+		//}
+
 		request := new(AccountByIdRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			request.Id = context.Param("id")
 		}
 
+		// TODO: Refactor id/phone/etc... checks to validation framework
 		id, err := strconv.ParseUint(request.Id, 10, 32)
 		if err != nil {
 			return context.JSON(http.StatusUnprocessableEntity, util.IdValidationErrorResponse(request.Id))

@@ -76,6 +76,28 @@ func PhoneValidationErrorResponse(value string) JsonResponse {
 	return ValidationErrorResponse(err)
 }
 
+func InviterIdValidationErrorResponse(value string) JsonResponse {
+	err := customErrors.ValidationError{
+		Value:   value,
+		Field:   "InviterId",
+		Message: "InviterId must be valid",
+		Param:   "must be valid numeric",
+	}
+
+	return ValidationErrorResponse(err)
+}
+
+func QuestionIdValidationErrorResponse(value string) JsonResponse {
+	err := customErrors.ValidationError{
+		Value:   value,
+		Field:   "QuestionId",
+		Message: "QuestionId must be valid",
+		Param:   "must be valid numeric",
+	}
+
+	return ValidationErrorResponse(err)
+}
+
 func HandleErrorResponse(ctx echo.Context, err error) error {
 	fmt.Println(err)
 
