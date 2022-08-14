@@ -1,12 +1,11 @@
 package routes
 
 import (
-	"accounts.sidooh/errors"
 	"accounts.sidooh/middlewares"
 	SecurityQuestion "accounts.sidooh/models/security_question"
+	"accounts.sidooh/util"
 	"accounts.sidooh/util/constants"
 	"github.com/labstack/echo/v4"
-	"net/http"
 )
 
 type CreateSecurityQuestionRequest struct {
@@ -18,10 +17,10 @@ func RegisterSecurityQuestionsHandler(e *echo.Echo, authMiddleware echo.Middlewa
 
 		securityQuestions, err := SecurityQuestion.All()
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return util.HandleErrorResponse(context, err)
 		}
 
-		return context.JSON(http.StatusOK, securityQuestions)
+		return util.HandleSuccessResponse(context, securityQuestions)
 
 	}, authMiddleware)
 
@@ -36,10 +35,10 @@ func RegisterSecurityQuestionsHandler(e *echo.Echo, authMiddleware echo.Middlewa
 			Status:   "ACTIVE",
 		})
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return util.HandleErrorResponse(context, err)
 		}
 
-		return context.JSON(http.StatusOK, question)
+		return util.HandleSuccessResponse(context, question)
 
 	}, authMiddleware)
 }
