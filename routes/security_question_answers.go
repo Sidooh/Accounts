@@ -1,10 +1,10 @@
 package routes
 
 import (
-	"accounts.sidooh/errors"
 	"accounts.sidooh/middlewares"
 	SecurityQuestionAnswer "accounts.sidooh/models/security_question_answer"
 	"accounts.sidooh/repositories"
+	"accounts.sidooh/util"
 	"accounts.sidooh/util/constants"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -39,15 +39,15 @@ func RegisterSecurityQuestionAnswersHandler(e *echo.Echo, authMiddleware echo.Mi
 
 		id, err := strconv.ParseUint(request.Id, 10, 32)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return context.JSON(http.StatusUnprocessableEntity, util.IdValidationErrorResponse(request.Id))
 		}
 
 		securityQuestions, err := SecurityQuestionAnswer.ByAccountIdWithQuestion(uint(id))
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return util.HandleErrorResponse(context, err)
 		}
 
-		return context.JSON(http.StatusOK, securityQuestions)
+		return util.HandleSuccessResponse(context, securityQuestions)
 
 	}, authMiddleware)
 
@@ -59,12 +59,12 @@ func RegisterSecurityQuestionAnswersHandler(e *echo.Echo, authMiddleware echo.Mi
 
 		id, err := strconv.Atoi(request.Id)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return context.JSON(http.StatusUnprocessableEntity, util.IdValidationErrorResponse(request.Id))
 		}
 
 		questionId, err := strconv.Atoi(request.QuestionId)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return context.JSON(http.StatusUnprocessableEntity, util.QuestionIdValidationErrorResponse(request.Id))
 		}
 
 		question, err := SecurityQuestionAnswer.Create(SecurityQuestionAnswer.Model{
@@ -73,10 +73,10 @@ func RegisterSecurityQuestionAnswersHandler(e *echo.Echo, authMiddleware echo.Mi
 			Answer:     request.Answer,
 		})
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return util.HandleErrorResponse(context, err)
 		}
 
-		return context.JSON(http.StatusOK, question)
+		return util.HandleSuccessResponse(context, question)
 
 	}, authMiddleware)
 
@@ -88,22 +88,20 @@ func RegisterSecurityQuestionAnswersHandler(e *echo.Echo, authMiddleware echo.Mi
 
 		id, err := strconv.Atoi(request.Id)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return context.JSON(http.StatusUnprocessableEntity, util.IdValidationErrorResponse(request.Id))
 		}
 
 		questionId, err := strconv.Atoi(request.QuestionId)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return context.JSON(http.StatusUnprocessableEntity, util.QuestionIdValidationErrorResponse(request.Id))
 		}
 
 		err = repositories.CheckAnswer(uint(id), uint(questionId), request.Answer)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return util.HandleErrorResponse(context, err)
 		}
 
-		return context.JSON(http.StatusOK, map[string]bool{
-			"message": true,
-		})
+		return util.HandleSuccessResponse(context, true)
 
 	}, authMiddleware)
 
@@ -116,17 +114,15 @@ func RegisterSecurityQuestionAnswersHandler(e *echo.Echo, authMiddleware echo.Mi
 
 		id, err := strconv.ParseUint(context.Param("id"), 10, 32)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return context.JSON(http.StatusUnprocessableEntity, util.IdValidationErrorResponse(request.Id))
 		}
 
 		err = repositories.HasSecurityQuestions(uint(id))
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return util.HandleErrorResponse(context, err)
 		}
 
-		return context.JSON(http.StatusOK, map[string]bool{
-			"message": true,
-		})
+		return util.HandleSuccessResponse(context, true)
 
 	}, authMiddleware)
 }

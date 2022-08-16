@@ -21,6 +21,7 @@ func main() {
 	}
 
 	db.Init()
+	defer db.Close()
 	//TODO: Ensure in production this doesn't mess up db
 	// TODO: Add a script file that accepts fresh migrate args from cmd
 	_ = db.Connection().AutoMigrate(
@@ -33,5 +34,6 @@ func main() {
 
 	echoServer, port, s := server.Setup()
 
+	// TODO: Review using H2C - cleartext server
 	echoServer.Logger.Fatal(echoServer.StartH2CServer(":"+port, s))
 }

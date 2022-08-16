@@ -7,6 +7,7 @@ import (
 	"accounts.sidooh/util"
 	"accounts.sidooh/util/constants"
 	"fmt"
+	"github.com/getsentry/sentry-go"
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -19,8 +20,21 @@ import (
 func Setup() (*echo.Echo, string, *http2.Server) {
 	fmt.Println("==== Starting Server ====")
 
+	// To initialize Sentry's handler, you need to initialize Sentry itself beforehand
+	if err := sentry.Init(sentry.ClientOptions{
+		Dsn: viper.GetString("SENTRY_DSN"),
+		// Set TracesSampleRate to 1.0 to capture 100%
+		// of transactions for performance monitoring.
+		// We recommend adjusting this value in production,
+		TracesSampleRate: viper.GetFloat64("SENTRY_TRACES_SAMPLE_RATE"),
+	}); err != nil {
+		fmt.Printf("Sentry initialization failed: %v\n", err)
+	}
+
 	e := echo.New()
 	e.HideBanner = true
+
+	e.Use(middleware.Logger())
 
 	// Todo: Move to GetLogFile helper
 	file := util.GetLogFile("server.log")
@@ -75,7 +89,7 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 	e.Any("*", func(context echo.Context) error {
 		err := errors.NotFoundError{}
 
-		return echo.NewHTTPError(err.Status(), err.Errors())
+		return echo.NewHTTPError(err.Status())
 	})
 
 	port := viper.GetString("PORT")

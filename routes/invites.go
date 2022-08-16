@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"accounts.sidooh/errors"
 	"accounts.sidooh/middlewares"
 	Invite "accounts.sidooh/models/invite"
 	"accounts.sidooh/util"
@@ -21,10 +20,10 @@ func RegisterInvitesHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		invites, err := Invite.All()
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return util.HandleErrorResponse(context, err)
 		}
 
-		return context.JSON(http.StatusOK, invites)
+		return util.HandleSuccessResponse(context, invites)
 
 	}, authMiddleware)
 
@@ -34,15 +33,15 @@ func RegisterInvitesHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		phone, err := util.GetPhoneByCountry("KE", phone)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return context.JSON(http.StatusUnprocessableEntity, util.PhoneValidationErrorResponse(phone))
 		}
 
 		invite, err := Invite.ByPhone(phone)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return util.HandleErrorResponse(context, err)
 		}
 
-		return context.JSON(http.StatusOK, invite)
+		return util.HandleSuccessResponse(context, invite)
 
 	}, authMiddleware)
 
@@ -56,12 +55,12 @@ func RegisterInvitesHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		//TODO: Move Country to env and fetch from it
 		phone, err := util.GetPhoneByCountry("KE", request.Phone)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return context.JSON(http.StatusUnprocessableEntity, util.PhoneValidationErrorResponse(request.Phone))
 		}
 
 		InviterId, err := strconv.ParseUint(request.InviterId, 10, 32)
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return context.JSON(http.StatusUnprocessableEntity, util.InviterIdValidationErrorResponse(request.InviterId))
 		}
 
 		invite, err := Invite.Create(Invite.Model{
@@ -69,9 +68,9 @@ func RegisterInvitesHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			Phone:     phone,
 		})
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return util.HandleErrorResponse(context, err)
 		}
 
-		return context.JSON(http.StatusOK, invite)
+		return util.HandleSuccessResponse(context, invite)
 	}, authMiddleware)
 }
