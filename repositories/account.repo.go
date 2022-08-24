@@ -6,6 +6,7 @@ import (
 	User "accounts.sidooh/models/user"
 	"accounts.sidooh/util"
 	"accounts.sidooh/util/constants"
+	"database/sql"
 	"errors"
 	"fmt"
 	"strconv"
@@ -160,4 +161,17 @@ func GetAccountByPhone(phone string, withUser bool) (interface{}, error) {
 	} else {
 		return Account.ByPhone(phone)
 	}
+}
+
+func ResetPin(id uint) error {
+	//	Get Account
+	account, err := Account.ById(id)
+	if err != nil {
+		return errors.New("invalid credentials")
+	}
+
+	account.Pin = sql.NullString{}
+	account.Save()
+
+	return nil
 }

@@ -322,4 +322,24 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 	}, authMiddleware)
 
+	e.POST(constants.API_URL+"/accounts/:id/reset-pin", func(context echo.Context) error {
+
+		request := new(AccountByIdRequest)
+		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
+			return err
+		}
+
+		id, err := strconv.ParseUint(context.Param("id"), 10, 32)
+		if err != nil {
+			return context.JSON(http.StatusUnprocessableEntity, util.IdValidationErrorResponse(request.Id))
+		}
+
+		err = repositories.ResetPin(uint(id))
+		if err != nil {
+			return util.HandleErrorResponse(context, err)
+		}
+
+		return util.HandleSuccessResponse(context, true)
+
+	}, authMiddleware)
 }
