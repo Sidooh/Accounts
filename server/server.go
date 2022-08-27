@@ -34,6 +34,8 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 	e := echo.New()
 	e.HideBanner = true
 
+	e.Use(middleware.Logger())
+
 	// Todo: Move to GetLogFile helper
 	file := util.GetLogFile("server.log")
 
@@ -87,7 +89,7 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 	e.Any("*", func(context echo.Context) error {
 		err := errors.NotFoundError{}
 
-		return echo.NewHTTPError(err.Status(), err.Errors())
+		return echo.NewHTTPError(err.Status())
 	})
 
 	port := viper.GetString("PORT")

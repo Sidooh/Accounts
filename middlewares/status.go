@@ -10,9 +10,9 @@ import (
 
 type (
 	Stats struct {
-		Uptime       time.Time
-		RequestCount uint64 `json:"request_count"`
-		Statuses     map[string]int
+		Uptime       time.Time      `json:"uptime"`
+		RequestCount uint64         `json:"request_count"`
+		Statuses     map[string]int `json:"statuses"`
 		mutex        sync.RWMutex
 	}
 )

@@ -6,6 +6,7 @@ import (
 	User "accounts.sidooh/models/user"
 	"accounts.sidooh/util"
 	"accounts.sidooh/util/constants"
+	"database/sql"
 	"errors"
 	"fmt"
 	"strconv"
@@ -89,19 +90,15 @@ func SetPin(id uint, pin string) error {
 	return nil
 }
 
-func HasPin(id uint) error {
+func HasPin(id uint) bool {
 	//	Get Account
 	account, err := Account.ById(id)
 	if err != nil {
-		return errors.New("invalid credentials")
+		return false
 	}
 
 	//	Check Pin exists
-	if account.Pin.Valid {
-		return nil
-	}
-
-	return errors.New("invalid credentials")
+	return account.Pin.Valid
 }
 
 func UpdateProfile(id uint, name string) (User.Model, error) {
@@ -140,4 +137,41 @@ func UpdateProfile(id uint, name string) (User.Model, error) {
 	}
 
 	return User.Model{}, errors.New("failed to update profile")
+}
+
+func GetAccounts(withUser bool) (interface{}, error) {
+	if withUser {
+		return Account.AllWithUser()
+	} else {
+		return Account.All()
+	}
+}
+
+func GetAccountById(id uint, withUser bool) (interface{}, error) {
+	if withUser {
+		return Account.ByIdWithUser(id)
+	} else {
+		return Account.ById(id)
+	}
+}
+
+func GetAccountByPhone(phone string, withUser bool) (interface{}, error) {
+	if withUser {
+		return Account.ByPhoneWithUser(phone)
+	} else {
+		return Account.ByPhone(phone)
+	}
+}
+
+func ResetPin(id uint) error {
+	//	Get Account
+	account, err := Account.ById(id)
+	if err != nil {
+		return errors.New("invalid credentials")
+	}
+
+	account.Pin = sql.NullString{}
+	account.Save()
+
+	return nil
 }
