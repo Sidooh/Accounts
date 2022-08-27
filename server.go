@@ -2,11 +2,6 @@ package main
 
 import (
 	"accounts.sidooh/db"
-	"accounts.sidooh/models/account"
-	"accounts.sidooh/models/invite"
-	"accounts.sidooh/models/security_question"
-	"accounts.sidooh/models/security_question_answer"
-	"accounts.sidooh/models/user"
 	"accounts.sidooh/server"
 	"accounts.sidooh/util"
 	"github.com/spf13/viper"
@@ -24,13 +19,13 @@ func main() {
 	defer db.Close()
 	//TODO: Ensure in production this doesn't mess up db
 	// TODO: Add a script file that accepts fresh migrate args from cmd
-	_ = db.Connection().AutoMigrate(
-		user.Model{},
-		account.ModelWithUser{},
-		invite.ModelWithAccountAndInvite{},
-		security_question.Model{},
-		security_question_answer.ModelWithAccountAndQuestion{},
-	)
+	//_ = db.Connection().AutoMigrate(
+	//	user.Model{},
+	//	account.ModelWithUser{},
+	//	invite.ModelWithAccountAndInvite{},
+	//	security_question.Model{},
+	//	security_question_answer.ModelWithAccountAndQuestion{},
+	//)
 
 	echoServer, port, s := server.Setup()
 

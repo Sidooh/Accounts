@@ -193,6 +193,14 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return err
 		}
 
+		if len(request.Search) >= 9 { // Most likely a phone number
+			// TODO: Move country to config
+			phone, err := util.GetPhoneByCountry("KE", request.Search)
+			if err == nil {
+				request.Search = phone
+			}
+		}
+
 		account, err := Account.SearchByIdOrPhone(request.Search)
 		if err != nil {
 			return util.HandleErrorResponse(context, err)
