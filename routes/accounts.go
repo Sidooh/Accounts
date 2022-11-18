@@ -127,7 +127,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		phone, err := util.GetPhoneByCountry("KE", request.Phone)
 		if err != nil {
-			return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
+			return context.JSON(http.StatusUnprocessableEntity, util.PhoneValidationErrorResponse(request.Phone))
 		}
 
 		account, err := repositories.Create(Account.Model{
@@ -136,10 +136,10 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			Active:  true,
 		})
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return util.HandleErrorResponse(context, err)
 		}
 
-		return context.JSON(http.StatusOK, account)
+		return util.HandleSuccessResponse(context, account)
 
 	}, authMiddleware)
 
@@ -152,17 +152,15 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		id, err := strconv.ParseUint(context.Param("id"), 10, 32)
 		if err != nil {
-			return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
+			return context.JSON(http.StatusUnprocessableEntity, util.IdValidationErrorResponse(context.Param("id")))
 		}
 
 		err = repositories.CheckPin(uint(id), strings.TrimSpace(request.Pin))
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return util.HandleErrorResponse(context, err)
 		}
 
-		return context.JSON(http.StatusOK, map[string]string{
-			"message": "ok",
-		})
+		return util.HandleSuccessResponse(context, true)
 
 	}, authMiddleware)
 
@@ -182,9 +180,8 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
 
-		return context.JSON(http.StatusOK, map[string]string{
-			"message": "ok",
-		})
+		return util.HandleSuccessResponse(context, true)
+
 	}, authMiddleware)
 
 	e.GET(constants.API_URL+"/accounts/search/id_or_phone", func(context echo.Context) error {
