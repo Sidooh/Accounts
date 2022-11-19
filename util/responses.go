@@ -105,6 +105,10 @@ func HandleErrorResponse(ctx echo.Context, err error) error {
 		return ctx.JSON(http.StatusNotFound, NotFoundErrorResponse())
 	}
 
+	if err.Error() == "phone is already taken" {
+		return ctx.JSON(http.StatusUnprocessableEntity, PhoneValidationErrorResponse(err.Error()))
+	}
+
 	return ctx.JSON(http.StatusInternalServerError, ServerErrorResponse())
 }
 
