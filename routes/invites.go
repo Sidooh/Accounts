@@ -27,7 +27,7 @@ func RegisterInvitesHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 	}, authMiddleware)
 
-	e.GET(constants.API_URL+"/invites/:phone", func(context echo.Context) error {
+	e.GET(constants.API_URL+"/invites/phone/:phone", func(context echo.Context) error {
 
 		phone := context.Param("phone")
 
