@@ -79,6 +79,17 @@ func TestCreate(t *testing.T) {
 	createRandomInvite(t, util.RandomPhone())
 }
 
+func TestCreateWithInviteCode(t *testing.T) {
+	phone := util.RandomPhone()
+	account, err := Account.Create(Account.Model{
+		Phone:      phone,
+		InviteCode: "TEST",
+	})
+
+	require.NoError(t, err)
+	require.NotEmpty(t, account)
+}
+
 func TestById(t *testing.T) {
 	invite1 := createRandomInvite(t, util.RandomPhone())
 	invite2, err := ById(invite1.ID)

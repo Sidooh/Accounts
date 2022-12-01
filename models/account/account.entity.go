@@ -21,6 +21,8 @@ type Model struct {
 	InviterID uint           `json:"inviter_id,omitempty"`
 	UserID    uint           `json:"user_id,omitempty"`
 
+	InviteCode string `json:"invite_code,omitempty"`
+
 	models.ModelTimeStamps
 }
 
