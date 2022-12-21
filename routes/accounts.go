@@ -15,7 +15,8 @@ import (
 )
 
 type CreateAccountRequest struct {
-	Phone string `json:"phone" validate:"required,numeric,min=9"`
+	Phone      string `json:"phone" validate:"required,numeric,min=9"`
+	InviteCode string `json:"invite_code,omitempty"`
 }
 
 type CheckPinRequest struct {
@@ -131,9 +132,10 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		account, err := repositories.Create(Account.Model{
-			Phone:   phone,
-			TelcoID: 1,
-			Active:  true,
+			Phone:      phone,
+			TelcoID:    1,
+			Active:     true,
+			InviteCode: request.InviteCode,
 		})
 		if err != nil {
 			return util.HandleErrorResponse(context, err)
