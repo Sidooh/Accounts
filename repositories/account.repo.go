@@ -175,3 +175,11 @@ func ResetPin(id uint) error {
 
 	return nil
 }
+
+func GetAccountsTimeData(limit int) (interface{}, error) {
+	return Account.TimeSeriesCount(limit)
+}
+
+func GetAccountsSummary() (interface{}, error) {
+	return Account.Summaries()
+}

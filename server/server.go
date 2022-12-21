@@ -77,6 +77,8 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 	routes.RegisterSecurityQuestionsHandler(e, authMiddlewareFunc)
 	routes.RegisterSecurityQuestionAnswersHandler(e, authMiddlewareFunc)
 
+	routes.RegisterDashboardHandler(e, authMiddlewareFunc)
+
 	//-------------------
 	// Custom middleware
 	//-------------------
