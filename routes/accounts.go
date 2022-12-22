@@ -37,7 +37,8 @@ type AncestorsOrDescendantRequest struct {
 }
 
 type AccountsRequest struct {
-	WithUser string `query:"with_user" validate:"omitempty,oneof=true false"`
+	WithUser    string `query:"with_user" validate:"omitempty,oneof=true false"`
+	WithInviter string `query:"with_inviter" validate:"omitempty,oneof=true false"`
 }
 
 type AccountByIdRequest struct {
@@ -55,7 +56,7 @@ type UpdateProfileRequest struct {
 	Name string `json:"name" validate:"required,min=3"`
 }
 
-//TODO: Improve error handling, statuses, messages etc...
+// TODO: Improve error handling, statuses, messages etc...
 func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	e.GET(constants.API_URL+"/accounts", func(context echo.Context) error {
 		request := new(AccountsRequest)
@@ -69,7 +70,6 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, accounts)
-
 	}, authMiddleware)
 
 	e.GET(constants.API_URL+"/accounts/:id", func(context echo.Context) error {
@@ -90,7 +90,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return context.JSON(http.StatusUnprocessableEntity, util.IdValidationErrorResponse(request.Id))
 		}
 
-		account, err := repositories.GetAccountById(uint(id), request.WithUser == "true")
+		account, err := repositories.GetAccountById(uint(id), request.WithUser == "true", request.WithInviter == "true")
 		if err != nil {
 			return util.HandleErrorResponse(context, err)
 		}

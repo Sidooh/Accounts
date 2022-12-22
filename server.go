@@ -20,6 +20,10 @@ func main() {
 		panic("JWT_KEY is not set")
 	}
 
+	if viper.GetInt("INVITE_LEVEL_LIMIT") < 1 {
+		panic("INVITE_LEVEL_LIMIT is not set")
+	}
+
 	db.Init()
 	defer db.Close()
 	//TODO: Ensure in production this doesn't mess up db
