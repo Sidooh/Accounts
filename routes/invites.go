@@ -42,11 +42,9 @@ func RegisterInvitesHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, invite)
-
 	}, authMiddleware)
 
 	e.POST(constants.API_URL+"/invites", func(context echo.Context) error {
-
 		request := new(CreateInviteRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err

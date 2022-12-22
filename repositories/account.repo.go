@@ -108,14 +108,7 @@ func UpdateProfile(id uint, name string) (User.Model, error) {
 		return User.Model{}, errors.New("invalid credentials")
 	}
 
-	switch account := account.(type) {
-	case *Account.ModelWithUser:
-
-		account.User.Update("name", name)
-
-		return account.User, nil
-
-	case *Account.Model:
+	if account.User == nil {
 		var user = User.Model{
 			Name:     name,
 			Username: account.Phone,
@@ -131,12 +124,11 @@ func UpdateProfile(id uint, name string) (User.Model, error) {
 		account.Update("user_id", strconv.Itoa(int(user.ID)))
 
 		return user, nil
+	} else {
+		account.User.Update("name", name)
 
-	default:
-		fmt.Printf("I don't know about type %T!\n", account)
+		return *account.User, nil
 	}
-
-	return User.Model{}, errors.New("failed to update profile")
 }
 
 func GetAccounts(withUser bool) (interface{}, error) {
@@ -147,8 +139,30 @@ func GetAccounts(withUser bool) (interface{}, error) {
 	}
 }
 
-func GetAccountById(id uint, withUser bool) (interface{}, error) {
-	if withUser {
+func GetAccountById(id uint, withUser bool, withInvite bool) (interface{}, error) {
+	if withUser && withInvite {
+		type AccountWithUserAndInviter struct {
+			Account.ModelWithUser
+			Inviter *Account.ModelWithUser `json:"inviter"`
+		}
+
+		account, err := Account.ByIdWithUser(id)
+		if err != nil {
+			return nil, err
+		}
+
+		inviter, err := Account.ByIdWithUser(account.InviterID)
+		if err != nil {
+			return &AccountWithUserAndInviter{
+				ModelWithUser: *account,
+			}, nil
+		}
+
+		return &AccountWithUserAndInviter{
+			ModelWithUser: *account,
+			Inviter:       inviter,
+		}, err
+	} else if withUser {
 		return Account.ByIdWithUser(id)
 	} else {
 		return Account.ById(id)

@@ -30,7 +30,7 @@ type Model struct {
 type ModelWithUser struct {
 	Model
 
-	User user.Model `json:"user"`
+	User *user.Model `json:"user"`
 }
 
 type InviteModel struct {
@@ -96,18 +96,12 @@ func ById(id uint) (Model, error) {
 	return find("id = ?", id)
 }
 
-func ByIdWithUser(id uint) (interface{}, error) {
+func ByIdWithUser(id uint) (*ModelWithUser, error) {
 	accountWithUser := new(ModelWithUser)
 
 	result := db.Connection().Joins("User").First(&accountWithUser, id)
 	if result.Error != nil {
-		return accountWithUser, result.Error
-	}
-
-	if accountWithUser.UserID == 0 {
-		accountModel := new(Model)
-		util.ConvertStruct(accountWithUser, accountModel)
-		return accountModel, nil
+		return nil, result.Error
 	}
 
 	return accountWithUser, nil
