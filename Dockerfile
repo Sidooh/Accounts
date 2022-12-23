@@ -2,7 +2,7 @@ FROM golang:1.19 as build
 
 WORKDIR /app
 
-COPY go.* .
+COPY go.* ./
 
 RUN go mod download
 
