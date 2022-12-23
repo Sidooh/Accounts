@@ -96,7 +96,6 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, account)
-
 	}, authMiddleware)
 
 	e.GET(constants.API_URL+"/accounts/phone/:phone", func(context echo.Context) error {
@@ -117,7 +116,6 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, account)
-
 	}, authMiddleware)
 
 	e.POST(constants.API_URL+"/accounts", func(context echo.Context) error {
@@ -142,11 +140,9 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, account)
-
 	}, authMiddleware)
 
 	e.POST(constants.API_URL+"/accounts/:id/check-pin", func(context echo.Context) error {
-
 		request := new(CheckPinRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err
@@ -163,7 +159,6 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, true)
-
 	}, authMiddleware)
 
 	e.POST(constants.API_URL+"/accounts/:id/set-pin", func(context echo.Context) error {
@@ -183,7 +178,6 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, true)
-
 	}, authMiddleware)
 
 	e.GET(constants.API_URL+"/accounts/search/id_or_phone", func(context echo.Context) error {
@@ -206,7 +200,6 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, account)
-
 	}, authMiddleware)
 
 	e.GET(constants.API_URL+"/accounts/search/phone", func(context echo.Context) error {
@@ -221,7 +214,6 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, accounts)
-
 	}, authMiddleware)
 
 	e.GET(constants.API_URL+"/accounts/:id/ancestors", func(context echo.Context) error {
@@ -253,7 +245,6 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, account)
-
 	}, authMiddleware)
 
 	e.GET(constants.API_URL+"/accounts/:id/descendants", func(context echo.Context) error {
@@ -284,11 +275,9 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, account)
-
 	}, authMiddleware)
 
 	e.GET(constants.API_URL+"/accounts/:id/has-pin", func(context echo.Context) error {
-
 		request := new(AccountByIdRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err
@@ -305,11 +294,9 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return context.JSON(http.StatusBadRequest, util.ErrorResponse("", false))
-
 	}, authMiddleware)
 
 	e.POST(constants.API_URL+"/accounts/:id/update-profile", func(context echo.Context) error {
-
 		request := new(UpdateProfileRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err
@@ -326,11 +313,9 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, user)
-
 	}, authMiddleware)
 
 	e.POST(constants.API_URL+"/accounts/:id/reset-pin", func(context echo.Context) error {
-
 		request := new(AccountByIdRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err
@@ -347,6 +332,5 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, true)
-
 	}, authMiddleware)
 }

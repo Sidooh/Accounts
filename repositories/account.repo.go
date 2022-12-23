@@ -114,6 +114,7 @@ func UpdateProfile(id uint, name string) (User.Model, error) {
 			Username: account.Phone,
 			IdNumber: account.Phone,
 			Email:    account.Phone + "@sidooh.net",
+			Status:   constants.ACTIVE,
 		}
 
 		user, err := User.CreateUser(user)

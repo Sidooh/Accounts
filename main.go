@@ -1,6 +1,7 @@
 package main
 
 import (
+	"accounts.sidooh/clients"
 	"accounts.sidooh/db"
 	"accounts.sidooh/models/account"
 	"accounts.sidooh/models/invite"
@@ -9,6 +10,8 @@ import (
 	"accounts.sidooh/models/user"
 	"accounts.sidooh/server"
 	"accounts.sidooh/util"
+	"accounts.sidooh/util/cache"
+	"accounts.sidooh/util/logger"
 	"github.com/spf13/viper"
 )
 
@@ -24,6 +27,7 @@ func main() {
 		panic("INVITE_LEVEL_LIMIT is not set")
 	}
 
+	logger.Init()
 	db.Init()
 	defer db.Close()
 	//TODO: Ensure in production this doesn't mess up db
@@ -41,6 +45,9 @@ func main() {
 			panic("failed to auto-migrate")
 		}
 	}
+
+	cache.Init()
+	clients.Init()
 
 	echoServer, port, s := server.Setup()
 
