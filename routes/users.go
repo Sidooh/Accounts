@@ -20,16 +20,13 @@ type UserByIdRequest struct {
 }
 
 func RegisterUsersHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
-
 	e.GET(constants.API_URL+"/users", func(context echo.Context) error {
-
 		users, err := User.All()
 		if err != nil {
 			return util.HandleErrorResponse(context, err)
 		}
 
 		return util.HandleSuccessResponse(context, users)
-
 	}, authMiddleware)
 
 	e.GET(constants.API_URL+"/users/:id", func(context echo.Context) error {
@@ -60,7 +57,6 @@ func RegisterUsersHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, user)
-
 	}, authMiddleware)
 
 	e.GET(constants.API_URL+"/users/search", func(context echo.Context) error {
@@ -75,6 +71,5 @@ func RegisterUsersHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, users)
-
 	}, authMiddleware)
 }
