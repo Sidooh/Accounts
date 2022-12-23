@@ -3,6 +3,7 @@ package routes
 import (
 	"accounts.sidooh/middlewares"
 	User "accounts.sidooh/models/user"
+	"accounts.sidooh/repositories"
 	"accounts.sidooh/util"
 	"accounts.sidooh/util/constants"
 	"github.com/labstack/echo/v4"
@@ -51,7 +52,7 @@ func RegisterUsersHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		//	return context.JSON(http.StatusOK, user)
 		//}
 
-		user, err := User.FindUserById(uint(id))
+		user, err := User.ById(uint(id))
 		if err != nil {
 			return util.HandleErrorResponse(context, err)
 		}
@@ -72,4 +73,22 @@ func RegisterUsersHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		return util.HandleSuccessResponse(context, users)
 	}, authMiddleware)
+
+	e.POST(constants.API_URL+"/users/:id/reset-password", func(ctx echo.Context) error {
+		request := new(UserByIdRequest)
+		if err := middlewares.BindAndValidateRequest(ctx, request); err != nil {
+			return err
+		}
+
+		id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
+		if err != nil {
+			return ctx.JSON(http.StatusUnprocessableEntity, util.IdValidationErrorResponse(request.Id))
+		}
+
+		if err = repositories.ResetPassword(uint(id)); err != nil {
+			return util.HandleErrorResponse(ctx, err)
+		}
+
+		return util.HandleSuccessResponse(ctx, true)
+	})
 }

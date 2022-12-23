@@ -1,7 +1,7 @@
 package util
 
 import (
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
 )
@@ -9,7 +9,7 @@ import (
 func GetFile(path string) *os.File {
 	file, err := os.OpenFile(path, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0660)
 	if err != nil {
-		fmt.Println(err)
+		log.Error(err)
 		return nil
 	}
 

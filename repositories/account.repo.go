@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"accounts.sidooh/clients"
 	Account "accounts.sidooh/models/account"
 	Invite "accounts.sidooh/models/invite"
 	User "accounts.sidooh/models/user"
@@ -114,6 +115,7 @@ func UpdateProfile(id uint, name string) (User.Model, error) {
 			Username: account.Phone,
 			IdNumber: account.Phone,
 			Email:    account.Phone + "@sidooh.net",
+			Status:   constants.ACTIVE,
 		}
 
 		user, err := User.CreateUser(user)
@@ -179,13 +181,27 @@ func GetAccountByPhone(phone string, withUser bool) (interface{}, error) {
 
 func ResetPin(id uint) error {
 	//	Get Account
-	account, err := Account.ById(id)
+	account, err := Account.ByIdWithUser(id)
 	if err != nil {
 		return errors.New("invalid credentials")
 	}
 
 	account.Pin = sql.NullString{}
 	account.Save()
+
+	notifyClient := clients.GetNotifyClient()
+
+	name := ""
+	if account.User != nil {
+		name = " " + account.User.Name
+	}
+
+	message := fmt.Sprintf("Hello%v,\nYour Sidooh pin has been reset.\n"+
+		"Dial *384*99# to set a new pin and keep earning from your purchases.\n\n"+
+		"If you did not request a pin reset, kindly contact us at customersupport@sidooh.co.ke promptly!", name)
+	if err := notifyClient.SendSMS("DEFAULT", account.Phone, message); err != nil {
+		return err
+	}
 
 	return nil
 }

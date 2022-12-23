@@ -75,7 +75,7 @@ func AuthUser(u Model) (Model, error) {
 	return user, nil
 }
 
-func FindUserById(id uint) (Model, error) {
+func ById(id uint) (Model, error) {
 	return find("id = ?", id)
 }
 

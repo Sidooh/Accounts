@@ -1,6 +1,7 @@
 package server
 
 import (
+	"accounts.sidooh/clients"
 	"accounts.sidooh/errors"
 	"accounts.sidooh/middlewares"
 	"accounts.sidooh/routes"
@@ -38,6 +39,9 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 
 	// Todo: Move to GetLogFile helper
 	file := util.GetLogFile("server.log")
+
+	// Initialize rest clients
+	clients.InitNotifyClient()
 
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Output: file,
