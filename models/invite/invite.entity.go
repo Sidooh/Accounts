@@ -41,7 +41,7 @@ func (ModelWithAccountAndInvite) TableName() string {
 
 func All() ([]Model, error) {
 	var invites []Model
-	result := db.Connection().Find(&invites)
+	result := db.Connection().Order("id desc").Find(&invites)
 	if result.Error != nil {
 		return invites, result.Error
 	}

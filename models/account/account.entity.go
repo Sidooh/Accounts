@@ -48,7 +48,7 @@ func (ModelWithUser) TableName() string {
 
 func All() ([]Model, error) {
 	var accounts []Model
-	result := db.Connection().Find(&accounts)
+	result := db.Connection().Order("id desc").Find(&accounts)
 	if result.Error != nil {
 		return accounts, result.Error
 	}
@@ -58,7 +58,7 @@ func All() ([]Model, error) {
 
 func AllWithUser() ([]interface{}, error) {
 	var accountsWithUsers []ModelWithUser
-	result := db.Connection().Joins("User").Find(&accountsWithUsers)
+	result := db.Connection().Joins("User").Order("id desc").Find(&accountsWithUsers)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -142,7 +142,7 @@ func SearchByIdOrPhone(search string) (Model, error) {
 func findAll(query interface{}, args interface{}) ([]Model, error) {
 	var accounts []Model
 
-	result := db.Connection().Where(query, args).Find(&accounts)
+	result := db.Connection().Where(query, args).Order("id desc").Find(&accounts)
 	if result.Error != nil {
 		return accounts, result.Error
 	}
