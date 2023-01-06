@@ -71,7 +71,7 @@ func TestCreateUser(t *testing.T) {
 
 func TestFindUserById(t *testing.T) {
 	user1 := createRandomUser(t, util.RandomString(6))
-	user2, err := FindUserById(user1.ID)
+	user2, err := ById(user1.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, user2)
 

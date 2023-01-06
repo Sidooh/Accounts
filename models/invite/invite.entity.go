@@ -6,6 +6,7 @@ import (
 	"accounts.sidooh/models/account"
 	"accounts.sidooh/util/constants"
 	"errors"
+	"fmt"
 	"github.com/spf13/viper"
 	"time"
 )
@@ -30,7 +31,7 @@ type ModelWithAccountAndInvite struct {
 	Inviter account.Model `json:"inviter"`
 }
 
-func (Model) TableName() string {
+func (*Model) TableName() string {
 	return "invites"
 }
 
@@ -137,4 +138,47 @@ func MarkExpired() error {
 		Update("status", constants.EXPIRED)
 
 	return nil
+}
+
+func TimeSeriesCount(limit int) (interface{}, error) {
+	var invites []struct {
+		Date  int `json:"date"`
+		Count int `json:"count"`
+	}
+	result := db.Connection().Raw(`
+SELECT EXTRACT(YEAR_MONTH FROM created_at) as date, COUNT(id) as count
+	FROM invites
+	GROUP BY date
+	ORDER BY date DESC
+	LIMIT ?`, limit).Scan(&invites)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return invites, nil
+}
+
+func Summaries() (interface{}, error) {
+	var invites struct {
+		Today int `json:"today"`
+		Month int `json:"month"`
+		Year  int `json:"year"`
+		Total int `json:"total"`
+	}
+	now := time.Now().UTC()
+	today := fmt.Sprintf("%d-%d-%d", now.Year(), now.Month(), now.Day())
+	month := fmt.Sprintf("%d-%d-%d", now.Year(), now.Month(), 1)
+	year := fmt.Sprintf("%d-%d-%d", now.Year(), 1, 1)
+
+	result := db.Connection().Raw(`SELECT 
+    	SUM(created_at > ?) as today,
+    	SUM(created_at > ?) as month,
+    	SUM(created_at > ?) as year,
+       COUNT(created_at) as total
+FROM invites`, today, month, year).Scan(&invites)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return invites, nil
 }

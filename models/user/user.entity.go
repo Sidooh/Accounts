@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/SamuelTissot/sqltime"
 	"gorm.io/gorm"
+	"time"
 )
 
 type Model struct {
@@ -24,7 +25,7 @@ type Model struct {
 	models.ModelTimeStamps
 }
 
-func (Model) TableName() string {
+func (*Model) TableName() string {
 	return "users"
 }
 
@@ -74,7 +75,7 @@ func AuthUser(u Model) (Model, error) {
 	return user, nil
 }
 
-func FindUserById(id uint) (Model, error) {
+func ById(id uint) (Model, error) {
 	return find("id = ?", id)
 }
 
@@ -119,4 +120,47 @@ func (u *Model) Save() *gorm.DB {
 
 func (u *Model) Update(column string, value string) *gorm.DB {
 	return db.Connection().Model(&u).Update(column, value)
+}
+
+func TimeSeriesCount(limit int) (interface{}, error) {
+	var users []struct {
+		Date  int `json:"date"`
+		Count int `json:"count"`
+	}
+	result := db.Connection().Raw(`
+SELECT EXTRACT(YEAR_MONTH FROM created_at) as date, COUNT(id) as count
+	FROM users
+	GROUP BY date
+	ORDER BY date DESC
+	LIMIT ?`, limit).Scan(&users)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return users, nil
+}
+
+func Summaries() (interface{}, error) {
+	var users struct {
+		Today int `json:"today"`
+		Month int `json:"month"`
+		Year  int `json:"year"`
+		Total int `json:"total"`
+	}
+	now := time.Now().UTC()
+	today := fmt.Sprintf("%d-%d-%d", now.Year(), now.Month(), now.Day())
+	month := fmt.Sprintf("%d-%d-%d", now.Year(), now.Month(), 1)
+	year := fmt.Sprintf("%d-%d-%d", now.Year(), 1, 1)
+
+	result := db.Connection().Raw(`SELECT 
+    	SUM(created_at > ?) as today,
+    	SUM(created_at > ?) as month,
+    	SUM(created_at > ?) as year,
+       COUNT(created_at) as total
+FROM users`, today, month, year).Scan(&users)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return users, nil
 }

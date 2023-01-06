@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
+	"time"
 )
 
 type Model struct {
@@ -29,7 +30,7 @@ type Model struct {
 type ModelWithUser struct {
 	Model
 
-	User user.Model `json:"user"`
+	User *user.Model `json:"user"`
 }
 
 type InviteModel struct {
@@ -95,18 +96,12 @@ func ById(id uint) (Model, error) {
 	return find("id = ?", id)
 }
 
-func ByIdWithUser(id uint) (interface{}, error) {
+func ByIdWithUser(id uint) (*ModelWithUser, error) {
 	accountWithUser := new(ModelWithUser)
 
 	result := db.Connection().Joins("User").First(&accountWithUser, id)
 	if result.Error != nil {
-		return accountWithUser, result.Error
-	}
-
-	if accountWithUser.UserID == 0 {
-		accountModel := new(Model)
-		util.ConvertStruct(accountWithUser, accountModel)
-		return accountModel, nil
+		return nil, result.Error
 	}
 
 	return accountWithUser, nil
@@ -226,6 +221,49 @@ func Descendants(id uint, levelLimit uint) ([]InviteModel, error) {
 
 	if len(accounts) == 0 {
 		return nil, errors.New("record not found")
+	}
+
+	return accounts, nil
+}
+
+func TimeSeriesCount(limit int) (interface{}, error) {
+	var accounts []struct {
+		Date  int `json:"date"`
+		Count int `json:"count"`
+	}
+	result := db.Connection().Raw(`
+SELECT EXTRACT(YEAR_MONTH FROM created_at) as date, COUNT(id) as count
+	FROM accounts
+	GROUP BY date
+	ORDER BY date DESC
+	LIMIT ?`, limit).Scan(&accounts)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return accounts, nil
+}
+
+func Summaries() (interface{}, error) {
+	var accounts struct {
+		Today int `json:"today"`
+		Month int `json:"month"`
+		Year  int `json:"year"`
+		Total int `json:"total"`
+	}
+	now := time.Now().UTC()
+	today := fmt.Sprintf("%d-%d-%d", now.Year(), now.Month(), now.Day())
+	month := fmt.Sprintf("%d-%d-%d", now.Year(), now.Month(), 1)
+	year := fmt.Sprintf("%d-%d-%d", now.Year(), 1, 1)
+
+	result := db.Connection().Raw(`SELECT 
+    	SUM(created_at > ?) as today,
+    	SUM(created_at > ?) as month,
+    	SUM(created_at > ?) as year,
+       COUNT(created_at) as total
+FROM accounts`, today, month, year).Scan(&accounts)
+	if result.Error != nil {
+		return nil, result.Error
 	}
 
 	return accounts, nil

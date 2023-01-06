@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"accounts.sidooh/clients"
 	Account "accounts.sidooh/models/account"
 	Invite "accounts.sidooh/models/invite"
 	User "accounts.sidooh/models/user"
@@ -108,19 +109,13 @@ func UpdateProfile(id uint, name string) (User.Model, error) {
 		return User.Model{}, errors.New("invalid credentials")
 	}
 
-	switch account := account.(type) {
-	case *Account.ModelWithUser:
-
-		account.User.Update("name", name)
-
-		return account.User, nil
-
-	case *Account.Model:
+	if account.User == nil {
 		var user = User.Model{
 			Name:     name,
 			Username: account.Phone,
 			IdNumber: account.Phone,
 			Email:    account.Phone + "@sidooh.net",
+			Status:   constants.ACTIVE,
 		}
 
 		user, err := User.CreateUser(user)
@@ -131,12 +126,11 @@ func UpdateProfile(id uint, name string) (User.Model, error) {
 		account.Update("user_id", strconv.Itoa(int(user.ID)))
 
 		return user, nil
+	} else {
+		account.User.Update("name", name)
 
-	default:
-		fmt.Printf("I don't know about type %T!\n", account)
+		return *account.User, nil
 	}
-
-	return User.Model{}, errors.New("failed to update profile")
 }
 
 func GetAccounts(withUser bool) (interface{}, error) {
@@ -147,8 +141,30 @@ func GetAccounts(withUser bool) (interface{}, error) {
 	}
 }
 
-func GetAccountById(id uint, withUser bool) (interface{}, error) {
-	if withUser {
+func GetAccountById(id uint, withUser bool, withInvite bool) (interface{}, error) {
+	if withUser && withInvite {
+		type AccountWithUserAndInviter struct {
+			Account.ModelWithUser
+			Inviter *Account.ModelWithUser `json:"inviter"`
+		}
+
+		account, err := Account.ByIdWithUser(id)
+		if err != nil {
+			return nil, err
+		}
+
+		inviter, err := Account.ByIdWithUser(account.InviterID)
+		if err != nil {
+			return &AccountWithUserAndInviter{
+				ModelWithUser: *account,
+			}, nil
+		}
+
+		return &AccountWithUserAndInviter{
+			ModelWithUser: *account,
+			Inviter:       inviter,
+		}, err
+	} else if withUser {
 		return Account.ByIdWithUser(id)
 	} else {
 		return Account.ById(id)
@@ -165,7 +181,7 @@ func GetAccountByPhone(phone string, withUser bool) (interface{}, error) {
 
 func ResetPin(id uint) error {
 	//	Get Account
-	account, err := Account.ById(id)
+	account, err := Account.ByIdWithUser(id)
 	if err != nil {
 		return errors.New("invalid credentials")
 	}
@@ -173,5 +189,27 @@ func ResetPin(id uint) error {
 	account.Pin = sql.NullString{}
 	account.Save()
 
+	notifyClient := clients.GetNotifyClient()
+
+	name := ""
+	if account.User != nil {
+		name = " " + account.User.Name
+	}
+
+	message := fmt.Sprintf("Hello%v,\nYour Sidooh pin has been reset.\n"+
+		"Dial *384*99# to set a new pin and keep earning from your purchases.\n\n"+
+		"If you did not request a pin reset, kindly contact us at customersupport@sidooh.co.ke promptly!", name)
+	if err := notifyClient.SendSMS("DEFAULT", account.Phone, message); err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func GetAccountsTimeData(limit int) (interface{}, error) {
+	return Account.TimeSeriesCount(limit)
+}
+
+func GetAccountsSummary() (interface{}, error) {
+	return Account.Summaries()
 }

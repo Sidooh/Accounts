@@ -47,11 +47,6 @@ func RegisterSignInHandler(e *echo.Echo) {
 		validity := time.Duration(viper.GetInt("ACCESS_TOKEN_VALIDITY")) * time.Minute
 		accessToken, _ := util.GenerateToken(tokenData, validity)
 
-		//validity = time.Duration(viper.GetInt("REFRESH_TOKEN_VALIDITY"))
-		//refreshToken, _ := util.GenerateToken(util.MyCustomClaims{Id: user.ID}, validity)
-
-		//util.SetTokenCookie(refreshToken, context)
-
 		return context.JSON(http.StatusOK, SignInResponse{AccessToken: accessToken})
 	})
 }

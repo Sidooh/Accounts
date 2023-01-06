@@ -2,8 +2,8 @@ package util
 
 import (
 	customErrors "accounts.sidooh/errors"
-	"fmt"
 	"github.com/labstack/echo/v4"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -99,10 +99,14 @@ func QuestionIdValidationErrorResponse(value string) JsonResponse {
 }
 
 func HandleErrorResponse(ctx echo.Context, err error) error {
-	fmt.Println(err)
+	log.Error(err)
 
 	if err.Error() == "record not found" {
 		return ctx.JSON(http.StatusNotFound, NotFoundErrorResponse())
+	}
+
+	if err.Error() == "phone is already taken" {
+		return ctx.JSON(http.StatusUnprocessableEntity, PhoneValidationErrorResponse(err.Error()))
 	}
 
 	return ctx.JSON(http.StatusInternalServerError, ServerErrorResponse())

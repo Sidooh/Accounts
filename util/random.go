@@ -8,7 +8,13 @@ import (
 	"time"
 )
 
-const alphabet = "abcdefghijklmnopqrstuvwxyz"
+const (
+	lowerCharSet   = "abcdefghijklmnopqrstuvwxyz"
+	upperCharSet   = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	specialCharSet = "!@#$%&*"
+	numberSet      = "0123456789"
+	allCharSet     = lowerCharSet + upperCharSet + specialCharSet + numberSet
+)
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
@@ -27,10 +33,24 @@ func RandomInt(min, max int64) int64 {
 // RandomString generates a random string of length n
 func RandomString(n int) string {
 	var sb strings.Builder
-	k := len(alphabet)
+	k := len(lowerCharSet)
 
 	for i := 0; i < n; i++ {
-		c := alphabet[rand.Intn(k)]
+		c := lowerCharSet[rand.Intn(k)]
+		sb.WriteByte(c)
+	}
+
+	return sb.String()
+}
+
+func RandomSecureString(n int) string {
+	var sb strings.Builder
+	k := len(allCharSet)
+
+	rand.Seed(time.Now().Unix())
+
+	for i := 0; i < n; i++ {
+		c := allCharSet[rand.Intn(k)]
 		sb.WriteByte(c)
 	}
 

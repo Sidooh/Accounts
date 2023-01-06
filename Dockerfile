@@ -1,4 +1,4 @@
-FROM golang:1.18 as build
+FROM golang:1.19 as build
 
 WORKDIR /app
 
@@ -6,7 +6,7 @@ COPY go.* ./
 
 RUN go mod download
 
-COPY ./ ./
+COPY . .
 
 RUN CGO_ENABLED=0 go build -o /server
 

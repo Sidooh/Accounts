@@ -37,7 +37,8 @@ type AncestorsOrDescendantRequest struct {
 }
 
 type AccountsRequest struct {
-	WithUser string `query:"with_user" validate:"omitempty,oneof=true false"`
+	WithUser    string `query:"with_user" validate:"omitempty,oneof=true false"`
+	WithInviter string `query:"with_inviter" validate:"omitempty,oneof=true false"`
 }
 
 type AccountByIdRequest struct {
@@ -55,7 +56,7 @@ type UpdateProfileRequest struct {
 	Name string `json:"name" validate:"required,min=3"`
 }
 
-//TODO: Improve error handling, statuses, messages etc...
+// TODO: Improve error handling, statuses, messages etc...
 func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	e.GET(constants.API_URL+"/accounts", func(context echo.Context) error {
 		request := new(AccountsRequest)
@@ -69,7 +70,6 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, accounts)
-
 	}, authMiddleware)
 
 	e.GET(constants.API_URL+"/accounts/:id", func(context echo.Context) error {
@@ -90,13 +90,12 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return context.JSON(http.StatusUnprocessableEntity, util.IdValidationErrorResponse(request.Id))
 		}
 
-		account, err := repositories.GetAccountById(uint(id), request.WithUser == "true")
+		account, err := repositories.GetAccountById(uint(id), request.WithUser == "true", request.WithInviter == "true")
 		if err != nil {
 			return util.HandleErrorResponse(context, err)
 		}
 
 		return util.HandleSuccessResponse(context, account)
-
 	}, authMiddleware)
 
 	e.GET(constants.API_URL+"/accounts/phone/:phone", func(context echo.Context) error {
@@ -117,7 +116,6 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, account)
-
 	}, authMiddleware)
 
 	e.POST(constants.API_URL+"/accounts", func(context echo.Context) error {
@@ -128,7 +126,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		phone, err := util.GetPhoneByCountry("KE", request.Phone)
 		if err != nil {
-			return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
+			return context.JSON(http.StatusUnprocessableEntity, util.PhoneValidationErrorResponse(request.Phone))
 		}
 
 		account, err := repositories.Create(Account.Model{
@@ -138,15 +136,13 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			InviteCode: request.InviteCode,
 		})
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return util.HandleErrorResponse(context, err)
 		}
 
-		return context.JSON(http.StatusOK, account)
-
+		return util.HandleSuccessResponse(context, account)
 	}, authMiddleware)
 
 	e.POST(constants.API_URL+"/accounts/:id/check-pin", func(context echo.Context) error {
-
 		request := new(CheckPinRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err
@@ -154,18 +150,15 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		id, err := strconv.ParseUint(context.Param("id"), 10, 32)
 		if err != nil {
-			return echo.NewHTTPError(422, errors.BadRequestError{Message: err.Error()}.Errors())
+			return context.JSON(http.StatusUnprocessableEntity, util.IdValidationErrorResponse(context.Param("id")))
 		}
 
 		err = repositories.CheckPin(uint(id), strings.TrimSpace(request.Pin))
 		if err != nil {
-			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
+			return util.HandleErrorResponse(context, err)
 		}
 
-		return context.JSON(http.StatusOK, map[string]string{
-			"message": "ok",
-		})
-
+		return util.HandleSuccessResponse(context, true)
 	}, authMiddleware)
 
 	e.POST(constants.API_URL+"/accounts/:id/set-pin", func(context echo.Context) error {
@@ -184,9 +177,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return echo.NewHTTPError(400, errors.BadRequestError{Message: err.Error()}.Errors())
 		}
 
-		return context.JSON(http.StatusOK, map[string]string{
-			"message": "ok",
-		})
+		return util.HandleSuccessResponse(context, true)
 	}, authMiddleware)
 
 	e.GET(constants.API_URL+"/accounts/search/id_or_phone", func(context echo.Context) error {
@@ -209,7 +200,6 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, account)
-
 	}, authMiddleware)
 
 	e.GET(constants.API_URL+"/accounts/search/phone", func(context echo.Context) error {
@@ -224,7 +214,6 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, accounts)
-
 	}, authMiddleware)
 
 	e.GET(constants.API_URL+"/accounts/:id/ancestors", func(context echo.Context) error {
@@ -256,7 +245,6 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, account)
-
 	}, authMiddleware)
 
 	e.GET(constants.API_URL+"/accounts/:id/descendants", func(context echo.Context) error {
@@ -287,11 +275,9 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, account)
-
 	}, authMiddleware)
 
 	e.GET(constants.API_URL+"/accounts/:id/has-pin", func(context echo.Context) error {
-
 		request := new(AccountByIdRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err
@@ -308,11 +294,9 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return context.JSON(http.StatusBadRequest, util.ErrorResponse("", false))
-
 	}, authMiddleware)
 
 	e.POST(constants.API_URL+"/accounts/:id/update-profile", func(context echo.Context) error {
-
 		request := new(UpdateProfileRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err
@@ -329,11 +313,9 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, user)
-
 	}, authMiddleware)
 
 	e.POST(constants.API_URL+"/accounts/:id/reset-pin", func(context echo.Context) error {
-
 		request := new(AccountByIdRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err
@@ -350,6 +332,5 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		}
 
 		return util.HandleSuccessResponse(context, true)
-
 	}, authMiddleware)
 }

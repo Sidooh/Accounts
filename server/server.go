@@ -1,6 +1,7 @@
 package server
 
 import (
+	"accounts.sidooh/clients"
 	"accounts.sidooh/errors"
 	"accounts.sidooh/middlewares"
 	"accounts.sidooh/routes"
@@ -39,6 +40,9 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 	// Todo: Move to GetLogFile helper
 	file := util.GetLogFile("server.log")
 
+	// Initialize rest clients
+	clients.InitNotifyClient()
+
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Output: file,
 		Format: `{"time":"${time_rfc3339}","remote_ip":"${remote_ip}",` +
@@ -76,6 +80,8 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 	routes.RegisterUsersHandler(e, authMiddlewareFunc)
 	routes.RegisterSecurityQuestionsHandler(e, authMiddlewareFunc)
 	routes.RegisterSecurityQuestionAnswersHandler(e, authMiddlewareFunc)
+
+	routes.RegisterDashboardHandler(e, authMiddlewareFunc)
 
 	//-------------------
 	// Custom middleware
