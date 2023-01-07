@@ -71,8 +71,8 @@ func TestAll(t *testing.T) {
 	require.NotEmpty(t, invites)
 	require.Equal(t, len(invites), 2)
 
-	require.Equal(t, invites[0], invite1)
-	require.Equal(t, invites[1], invite2)
+	require.Equal(t, invites[1], invite1)
+	require.Equal(t, invites[0], invite2)
 }
 
 func TestCreate(t *testing.T) {

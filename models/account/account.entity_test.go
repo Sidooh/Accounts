@@ -57,8 +57,8 @@ func TestAll(t *testing.T) {
 	require.NotEmpty(t, accounts)
 	require.GreaterOrEqual(t, len(accounts), 2)
 
-	require.Equal(t, accounts[len(accounts)-2], account1)
-	require.Equal(t, accounts[len(accounts)-1], account2)
+	require.Equal(t, accounts[1], account1)
+	require.Equal(t, accounts[0], account2)
 }
 
 func TestCreate(t *testing.T) {
@@ -125,7 +125,7 @@ func TestSearchByPhone(t *testing.T) {
 	require.NotEmpty(t, accounts)
 	require.Equal(t, 2, len(accounts))
 
-	require.Equal(t, accounts[1], account2)
+	require.Equal(t, accounts[0], account2)
 
 	accounts, err = SearchByPhone("3")
 	require.NoError(t, err)
