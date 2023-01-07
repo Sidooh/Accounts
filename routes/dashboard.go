@@ -81,10 +81,7 @@ func RegisterDashboardHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) 
 
 		s := data.([]interface{})
 
-		util.ReverseInterfaceSlice(s)
-
 		return util.HandleSuccessResponse(context, s[:15])
-
 	}, authMiddleware)
 
 	e.GET(constants.API_DASHBOARD_URL+"/recent-invites", func(context echo.Context) error {
@@ -92,8 +89,6 @@ func RegisterDashboardHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) 
 		if err != nil {
 			return util.HandleErrorResponse(context, err)
 		}
-
-		util.ReverseSlice(s)
 
 		return util.HandleSuccessResponse(context, s[:15])
 	}, authMiddleware)
