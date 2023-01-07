@@ -33,7 +33,7 @@ func All() ([]Model, error) {
 	conn := db.Connection()
 
 	var users []Model
-	result := conn.Find(&users)
+	result := conn.Order("id desc").Find(&users)
 	if result.Error != nil {
 		return users, result.Error
 	}
@@ -93,7 +93,7 @@ func findAll(query interface{}, args interface{}) ([]Model, error) {
 
 	var users []Model
 
-	result := conn.Where(query, args).Find(&users)
+	result := conn.Where(query, args).Order("id desc").Find(&users)
 	if result.Error != nil {
 		return users, result.Error
 	}

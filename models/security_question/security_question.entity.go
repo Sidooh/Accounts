@@ -23,7 +23,7 @@ func All() ([]Model, error) {
 	conn := db.Connection()
 
 	var questions []Model
-	result := conn.Find(&questions)
+	result := conn.Order("id desc").Find(&questions)
 	if result.Error != nil {
 		return questions, result.Error
 	}

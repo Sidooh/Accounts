@@ -61,8 +61,8 @@ func TestAll(t *testing.T) {
 	require.NotEmpty(t, users)
 	require.GreaterOrEqual(t, len(users), 2)
 
-	require.Equal(t, users[len(users)-2], user1)
-	require.Equal(t, users[len(users)-1], user2)
+	require.Equal(t, users[1], user1)
+	require.Equal(t, users[0], user2)
 }
 
 func TestCreateUser(t *testing.T) {
@@ -143,7 +143,7 @@ func TestSearchByEmail(t *testing.T) {
 	require.NotEmpty(t, users)
 	require.Equal(t, 2, len(users))
 
-	require.Equal(t, users[1], user2)
+	require.Equal(t, users[0], user2)
 
 	users, err = SearchByEmail("c")
 	require.NoError(t, err)
