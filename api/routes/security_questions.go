@@ -2,7 +2,8 @@ package routes
 
 import (
 	"accounts.sidooh/api/middlewares"
-	SecurityQuestion "accounts.sidooh/models/security_question"
+	"accounts.sidooh/pkg/entities"
+	"accounts.sidooh/pkg/repositories/security-questions"
 	"accounts.sidooh/utils"
 	"accounts.sidooh/utils/constants"
 	"github.com/labstack/echo/v4"
@@ -13,9 +14,9 @@ type CreateSecurityQuestionRequest struct {
 }
 
 func RegisterSecurityQuestionsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
-	e.GET(constants.API_URL+"/security-questions", func(context echo.Context) error {
+	e.GET(constants.API_URL+"/security-question-answers", func(context echo.Context) error {
 
-		securityQuestions, err := SecurityQuestion.All()
+		securityQuestions, err := security_questions.ReadAll()
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
@@ -24,13 +25,13 @@ func RegisterSecurityQuestionsHandler(e *echo.Echo, authMiddleware echo.Middlewa
 
 	}, authMiddleware)
 
-	e.POST(constants.API_URL+"/security-questions", func(context echo.Context) error {
+	e.POST(constants.API_URL+"/security-question-answers", func(context echo.Context) error {
 		request := new(CreateSecurityQuestionRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err
 		}
 
-		question, err := SecurityQuestion.CreateQuestion(SecurityQuestion.Model{
+		question, err := security_questions.Create(entities.Question{
 			Question: request.Question,
 			Status:   "ACTIVE",
 		})

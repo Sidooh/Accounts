@@ -1,38 +1,18 @@
-package user
+package users
 
 import (
-	"accounts.sidooh/models"
 	"accounts.sidooh/pkg/db"
+	"accounts.sidooh/pkg/entities"
 	"accounts.sidooh/utils"
 	"errors"
 	"fmt"
-	"github.com/SamuelTissot/sqltime"
-	"gorm.io/gorm"
 	"time"
 )
 
-type Model struct {
-	models.ModelID
-
-	Name            string        `json:"name" gorm:"size:64"`
-	Username        string        `json:"username,omitempty" gorm:"uniqueIndex; size:16"`
-	IdNumber        string        `json:"id_number,omitempty" gorm:"size:16"`
-	Status          string        `json:"status,omitempty" gorm:"size:16"`
-	Email           string        `json:"email" gorm:"uniqueIndex; size:256; not null"`
-	EmailVerifiedAt *sqltime.Time `gorm:"type:timestamp" json:"-"`
-	Password        string        `json:"-"`
-
-	models.ModelTimeStamps
-}
-
-func (*Model) TableName() string {
-	return "users"
-}
-
-func All() ([]Model, error) {
+func ReadAll() ([]entities.User, error) {
 	conn := db.Connection()
 
-	var users []Model
+	var users []entities.User
 	result := conn.Order("id desc").Find(&users)
 	if result.Error != nil {
 		return users, result.Error
@@ -41,57 +21,57 @@ func All() ([]Model, error) {
 	return users, nil
 }
 
-func CreateUser(u Model) (Model, error) {
+func Create(u entities.User) (entities.User, error) {
 	conn := db.Connection()
-	_, err := FindUserByEmail(u.Email)
+	_, err := ReadByEmail(u.Email)
 
 	if err == nil {
-		return Model{}, errors.New("email is already taken")
+		return entities.User{}, errors.New("email is already taken")
 	}
 
 	u.Password, _ = utils.ToHash(u.Password)
 
 	result := conn.Create(&u)
 	if result.Error != nil {
-		return Model{}, errors.New("error creating user")
+		return entities.User{}, errors.New("error creating user")
 	}
 
 	return u, nil
 }
 
-func AuthUser(u Model) (Model, error) {
-	user, err := FindUserByEmail(u.Email)
+func Authenticate(u entities.User) (entities.User, error) {
+	user, err := ReadByEmail(u.Email)
 
 	if err != nil {
-		return Model{}, errors.New("invalid credentials")
+		return entities.User{}, errors.New("invalid credentials")
 	}
 
 	res := utils.Compare(user.Password, u.Password)
 
 	if !res {
-		return Model{}, errors.New("invalid credentials")
+		return entities.User{}, errors.New("invalid credentials")
 	}
 
 	return user, nil
 }
 
-func ById(id uint) (Model, error) {
+func ReadById(id uint) (entities.User, error) {
 	return find("id = ?", id)
 }
 
-func FindUserByEmail(email string) (Model, error) {
+func ReadByEmail(email string) (entities.User, error) {
 	return find("email = ?", email)
 }
 
-func SearchByEmail(email string) ([]Model, error) {
+func SearchByEmail(email string) ([]entities.User, error) {
 	//%%  a literal percent sign; consumes no value
 	return findAll("email LIKE ?", fmt.Sprintf("%%%s%%", email))
 }
 
-func findAll(query interface{}, args interface{}) ([]Model, error) {
+func findAll(query interface{}, args interface{}) ([]entities.User, error) {
 	conn := db.Connection()
 
-	var users []Model
+	var users []entities.User
 
 	result := conn.Where(query, args).Order("id desc").Find(&users)
 	if result.Error != nil {
@@ -101,10 +81,10 @@ func findAll(query interface{}, args interface{}) ([]Model, error) {
 	return users, nil
 }
 
-func find(query interface{}, args interface{}) (Model, error) {
+func find(query interface{}, args interface{}) (entities.User, error) {
 	conn := db.Connection()
 
-	user := Model{}
+	user := entities.User{}
 
 	result := conn.Where(query, args).First(&user)
 	if result.Error != nil {
@@ -114,15 +94,7 @@ func find(query interface{}, args interface{}) (Model, error) {
 	return user, nil
 }
 
-func (u *Model) Save() *gorm.DB {
-	return db.Connection().Save(&u)
-}
-
-func (u *Model) Update(column string, value string) *gorm.DB {
-	return db.Connection().Model(&u).Update(column, value)
-}
-
-func TimeSeriesCount(limit int) (interface{}, error) {
+func ReadTimeSeriesCount(limit int) (interface{}, error) {
 	var users []struct {
 		Date  int `json:"date"`
 		Count int `json:"count"`
@@ -140,7 +112,7 @@ SELECT EXTRACT(YEAR_MONTH FROM created_at) as date, COUNT(id) as count
 	return users, nil
 }
 
-func Summaries() (interface{}, error) {
+func ReadSummaries() (interface{}, error) {
 	var users struct {
 		Today int `json:"today"`
 		Month int `json:"month"`

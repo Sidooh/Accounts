@@ -1,10 +1,10 @@
-package repositories
+package accounts
 
 import (
-	Account "accounts.sidooh/models/account"
-	Invite "accounts.sidooh/models/invite"
-	User "accounts.sidooh/models/user"
 	"accounts.sidooh/pkg/clients"
+	"accounts.sidooh/pkg/entities"
+	"accounts.sidooh/pkg/repositories/invites"
+	"accounts.sidooh/pkg/repositories/users"
 	"accounts.sidooh/utils"
 	"accounts.sidooh/utils/constants"
 	"database/sql"
@@ -13,9 +13,9 @@ import (
 	"strconv"
 )
 
-func Create(a Account.Model) (Account.Model, error) {
+func Create(a entities.Account) (entities.Account, error) {
 	//	Get Invite if exists
-	invite, err := Invite.UnexpiredByPhone(a.Phone)
+	invite, err := invites.ReadUnexpiredByPhone(a.Phone)
 	if err != nil {
 		fmt.Println("Invite not found for", a.Phone)
 	} else {
@@ -23,7 +23,7 @@ func Create(a Account.Model) (Account.Model, error) {
 	}
 
 	//	Create Account
-	account, err := Account.Create(a)
+	account, err := CreateAccount(a)
 	if err != nil {
 		return a, err
 	}
@@ -41,7 +41,7 @@ func Create(a Account.Model) (Account.Model, error) {
 
 func CheckPin(id uint, pin string) error {
 	//	Get Account
-	account, err := Account.ById(id)
+	account, err := ReadById(id)
 	if err != nil {
 		return errors.New("invalid credentials")
 	}
@@ -72,7 +72,7 @@ func CheckPin(id uint, pin string) error {
 
 func SetPin(id uint, pin string) error {
 	//	Get Account
-	account, err := Account.ById(id)
+	account, err := ReadById(id)
 	if err != nil {
 		return errors.New("account not found")
 	}
@@ -93,7 +93,7 @@ func SetPin(id uint, pin string) error {
 
 func HasPin(id uint) bool {
 	//	Get Account
-	account, err := Account.ById(id)
+	account, err := ReadById(id)
 	if err != nil {
 		return false
 	}
@@ -102,15 +102,15 @@ func HasPin(id uint) bool {
 	return account.Pin.Valid
 }
 
-func UpdateProfile(id uint, name string) (User.Model, error) {
+func UpdateProfile(id uint, name string) (entities.User, error) {
 	//	Get Account
-	account, err := Account.ByIdWithUser(id)
+	account, err := ReadWithUser(id)
 	if err != nil {
-		return User.Model{}, errors.New("invalid credentials")
+		return entities.User{}, errors.New("invalid credentials")
 	}
 
 	if account.User == nil {
-		var user = User.Model{
+		var user = entities.User{
 			Name:     name,
 			Username: account.Phone,
 			IdNumber: account.Phone,
@@ -118,9 +118,9 @@ func UpdateProfile(id uint, name string) (User.Model, error) {
 			Status:   constants.ACTIVE,
 		}
 
-		user, err := User.CreateUser(user)
+		user, err := users.Create(user)
 		if err != nil {
-			return User.Model{}, err
+			return entities.User{}, err
 		}
 
 		account.Update("user_id", strconv.Itoa(int(user.ID)))
@@ -135,53 +135,33 @@ func UpdateProfile(id uint, name string) (User.Model, error) {
 
 func GetAccounts(withUser bool, limit int) (interface{}, error) {
 	if withUser {
-		return Account.AllWithUser(limit)
+		return ReadAllWithUser(limit)
 	} else {
-		return Account.All()
+		return ReadAll()
 	}
 }
 
-func GetAccountById(id uint, withUser bool, withInvite bool) (interface{}, error) {
-	if withUser && withInvite {
-		type AccountWithUserAndInviter struct {
-			Account.ModelWithUser
-			Inviter *Account.ModelWithUser `json:"inviter"`
-		}
-
-		account, err := Account.ByIdWithUser(id)
-		if err != nil {
-			return nil, err
-		}
-
-		inviter, err := Account.ByIdWithUser(account.InviterID)
-		if err != nil {
-			return &AccountWithUserAndInviter{
-				ModelWithUser: *account,
-			}, nil
-		}
-
-		return &AccountWithUserAndInviter{
-			ModelWithUser: *account,
-			Inviter:       inviter,
-		}, err
+func GetAccountById(id uint, withUser bool, withInviter bool) (interface{}, error) {
+	if withUser && withInviter {
+		return ReadWithUserAndInviter(id)
 	} else if withUser {
-		return Account.ByIdWithUser(id)
+		return ReadWithUser(id)
 	} else {
-		return Account.ById(id)
+		return ReadById(id)
 	}
 }
 
 func GetAccountByPhone(phone string, withUser bool) (interface{}, error) {
 	if withUser {
-		return Account.ByPhoneWithUser(phone)
+		return ReadByPhoneWithUser(phone)
 	} else {
-		return Account.ByPhone(phone)
+		return ReadByPhone(phone)
 	}
 }
 
 func ResetPin(id uint) error {
 	//	Get Account
-	account, err := Account.ByIdWithUser(id)
+	account, err := ReadWithUser(id)
 	if err != nil {
 		return errors.New("invalid credentials")
 	}
@@ -207,9 +187,9 @@ func ResetPin(id uint) error {
 }
 
 func GetAccountsTimeData(limit int) (interface{}, error) {
-	return Account.TimeSeriesCount(limit)
+	return ReadAccountsTimeSeriesCount(limit)
 }
 
 func GetAccountsSummary() (interface{}, error) {
-	return Account.Summaries()
+	return ReadAccountsSummaries()
 }

@@ -2,8 +2,7 @@ package routes
 
 import (
 	"accounts.sidooh/api/middlewares"
-	User "accounts.sidooh/models/user"
-	"accounts.sidooh/pkg/repositories"
+	"accounts.sidooh/pkg/repositories/users"
 	"accounts.sidooh/utils"
 	"accounts.sidooh/utils/constants"
 	"github.com/labstack/echo/v4"
@@ -22,7 +21,7 @@ type UserByIdRequest struct {
 
 func RegisterUsersHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	e.GET(constants.API_URL+"/users", func(context echo.Context) error {
-		users, err := User.All()
+		users, err := users.ReadAll()
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
@@ -52,7 +51,7 @@ func RegisterUsersHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		//	return context.JSON(http.StatusOK, user)
 		//}
 
-		user, err := User.ById(uint(id))
+		user, err := users.ReadById(uint(id))
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
@@ -66,7 +65,7 @@ func RegisterUsersHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return err
 		}
 
-		users, err := User.SearchByEmail(request.Email)
+		users, err := users.SearchByEmail(request.Email)
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
@@ -85,7 +84,7 @@ func RegisterUsersHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return ctx.JSON(http.StatusUnprocessableEntity, utils.IdValidationErrorResponse(request.Id))
 		}
 
-		if err = repositories.ResetPassword(uint(id)); err != nil {
+		if err = users.ResetPassword(uint(id)); err != nil {
 			return utils.HandleErrorResponse(ctx, err)
 		}
 

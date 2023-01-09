@@ -2,13 +2,9 @@ package main
 
 import (
 	"accounts.sidooh/api"
-	"accounts.sidooh/models/account"
-	"accounts.sidooh/models/invite"
-	"accounts.sidooh/models/security_question"
-	"accounts.sidooh/models/security_question_answer"
-	"accounts.sidooh/models/user"
 	"accounts.sidooh/pkg/clients"
 	"accounts.sidooh/pkg/db"
+	"accounts.sidooh/pkg/entities"
 	"accounts.sidooh/utils"
 	"accounts.sidooh/utils/cache"
 	"accounts.sidooh/utils/logger"
@@ -34,11 +30,11 @@ func main() {
 	// TODO: Add a script file that accepts fresh migrate args from cmd
 	if viper.GetBool("MIGRATE_DB") {
 		err := db.Connection().AutoMigrate(
-			user.Model{},
-			account.ModelWithUser{},
-			invite.ModelWithAccountAndInvite{},
-			security_question.Model{},
-			security_question_answer.ModelWithAccountAndQuestion{},
+			entities.User{},
+			entities.AccountWithUser{},
+			entities.InviteWithAccountAndInviter{},
+			entities.Question{},
+			entities.QuestionAnswerWithAccountAndQuestion{},
 		)
 
 		if err != nil {

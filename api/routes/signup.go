@@ -2,8 +2,9 @@ package routes
 
 import (
 	"accounts.sidooh/api/middlewares"
-	User "accounts.sidooh/models/user"
 	"accounts.sidooh/pkg"
+	"accounts.sidooh/pkg/entities"
+	"accounts.sidooh/pkg/repositories/users"
 	"accounts.sidooh/utils/constants"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -33,7 +34,7 @@ func signup(context echo.Context) error {
 		username = request.Email
 	}
 
-	user, err := User.CreateUser(User.Model{
+	user, err := users.Create(entities.User{
 		Email:    request.Email,
 		Password: strings.TrimSpace(request.Password),
 		Username: username,

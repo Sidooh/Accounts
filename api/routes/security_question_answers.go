@@ -2,8 +2,8 @@ package routes
 
 import (
 	"accounts.sidooh/api/middlewares"
-	SecurityQuestionAnswer "accounts.sidooh/models/security_question_answer"
-	"accounts.sidooh/pkg/repositories"
+	"accounts.sidooh/pkg/entities"
+	"accounts.sidooh/pkg/repositories/security-question-answers"
 	"accounts.sidooh/utils"
 	"accounts.sidooh/utils/constants"
 	"github.com/labstack/echo/v4"
@@ -31,7 +31,7 @@ type QuestionsByAccountIdRequest struct {
 }
 
 func RegisterSecurityQuestionAnswersHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
-	e.GET(constants.API_URL+"/accounts/:id/security-questions", func(context echo.Context) error {
+	e.GET(constants.API_URL+"/accounts/:id/security-question-answers", func(context echo.Context) error {
 		request := new(QuestionsByAccountIdRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			request.Id = context.Param("id")
@@ -42,7 +42,7 @@ func RegisterSecurityQuestionAnswersHandler(e *echo.Echo, authMiddleware echo.Mi
 			return context.JSON(http.StatusUnprocessableEntity, utils.IdValidationErrorResponse(request.Id))
 		}
 
-		securityQuestions, err := SecurityQuestionAnswer.ByAccountIdWithQuestion(uint(id))
+		securityQuestions, err := security_question_answers.ReadByAccountIdWithQuestion(uint(id))
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
@@ -51,7 +51,7 @@ func RegisterSecurityQuestionAnswersHandler(e *echo.Echo, authMiddleware echo.Mi
 
 	}, authMiddleware)
 
-	e.POST(constants.API_URL+"/accounts/:id/security-questions/answers", func(context echo.Context) error {
+	e.POST(constants.API_URL+"/accounts/:id/security-question-answers/answers", func(context echo.Context) error {
 		request := new(CreateSecurityQuestionAnswersRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			request.Id = context.Param("id")
@@ -67,7 +67,7 @@ func RegisterSecurityQuestionAnswersHandler(e *echo.Echo, authMiddleware echo.Mi
 			return context.JSON(http.StatusUnprocessableEntity, utils.QuestionIdValidationErrorResponse(request.Id))
 		}
 
-		question, err := SecurityQuestionAnswer.Create(SecurityQuestionAnswer.Model{
+		question, err := security_question_answers.Create(entities.QuestionAnswer{
 			AccountID:  uint(id),
 			QuestionID: uint(questionId),
 			Answer:     request.Answer,
@@ -80,7 +80,7 @@ func RegisterSecurityQuestionAnswersHandler(e *echo.Echo, authMiddleware echo.Mi
 
 	}, authMiddleware)
 
-	e.POST(constants.API_URL+"/accounts/:id/security-questions/check", func(context echo.Context) error {
+	e.POST(constants.API_URL+"/accounts/:id/security-question-answers/check", func(context echo.Context) error {
 		request := new(CreateSecurityQuestionAnswersRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			request.Id = context.Param("id")
@@ -96,7 +96,7 @@ func RegisterSecurityQuestionAnswersHandler(e *echo.Echo, authMiddleware echo.Mi
 			return context.JSON(http.StatusUnprocessableEntity, utils.QuestionIdValidationErrorResponse(request.Id))
 		}
 
-		err = repositories.CheckAnswer(uint(id), uint(questionId), request.Answer)
+		err = security_question_answers.CheckAnswer(uint(id), uint(questionId), request.Answer)
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
@@ -105,7 +105,7 @@ func RegisterSecurityQuestionAnswersHandler(e *echo.Echo, authMiddleware echo.Mi
 
 	}, authMiddleware)
 
-	e.GET(constants.API_URL+"/accounts/:id/has-security-questions", func(context echo.Context) error {
+	e.GET(constants.API_URL+"/accounts/:id/has-security-question-answers", func(context echo.Context) error {
 
 		request := new(QuestionsByAccountIdRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
@@ -117,7 +117,7 @@ func RegisterSecurityQuestionAnswersHandler(e *echo.Echo, authMiddleware echo.Mi
 			return context.JSON(http.StatusUnprocessableEntity, utils.IdValidationErrorResponse(request.Id))
 		}
 
-		err = repositories.HasSecurityQuestions(uint(id))
+		err = security_question_answers.HasSecurityQuestions(uint(id))
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}

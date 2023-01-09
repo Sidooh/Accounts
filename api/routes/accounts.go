@@ -2,9 +2,9 @@ package routes
 
 import (
 	"accounts.sidooh/api/middlewares"
-	Account "accounts.sidooh/models/account"
 	"accounts.sidooh/pkg"
-	"accounts.sidooh/pkg/repositories"
+	"accounts.sidooh/pkg/entities"
+	"accounts.sidooh/pkg/repositories/accounts"
 	"accounts.sidooh/utils"
 	"accounts.sidooh/utils/constants"
 	"github.com/labstack/echo/v4"
@@ -64,7 +64,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return err
 		}
 
-		accounts, err := repositories.GetAccounts(request.WithUser == "true", constants.DEFAULT_QUERY_LIMIT)
+		accounts, err := accounts.GetAccounts(request.WithUser == "true", constants.DEFAULT_QUERY_LIMIT)
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
@@ -90,7 +90,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return context.JSON(http.StatusUnprocessableEntity, utils.IdValidationErrorResponse(request.Id))
 		}
 
-		account, err := repositories.GetAccountById(uint(id), request.WithUser == "true", request.WithInviter == "true")
+		account, err := accounts.GetAccountById(uint(id), request.WithUser == "true", request.WithInviter == "true")
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
@@ -110,7 +110,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return context.JSON(http.StatusUnprocessableEntity, utils.PhoneValidationErrorResponse(request.Phone))
 		}
 
-		account, err := repositories.GetAccountByPhone(phone, request.WithUser == "true")
+		account, err := accounts.GetAccountByPhone(phone, request.WithUser == "true")
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
@@ -129,7 +129,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return context.JSON(http.StatusUnprocessableEntity, utils.PhoneValidationErrorResponse(request.Phone))
 		}
 
-		account, err := repositories.Create(Account.Model{
+		account, err := accounts.Create(entities.Account{
 			Phone:      phone,
 			TelcoID:    1,
 			Active:     true,
@@ -153,7 +153,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return context.JSON(http.StatusUnprocessableEntity, utils.IdValidationErrorResponse(context.Param("id")))
 		}
 
-		err = repositories.CheckPin(uint(id), strings.TrimSpace(request.Pin))
+		err = accounts.CheckPin(uint(id), strings.TrimSpace(request.Pin))
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
@@ -172,7 +172,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return echo.NewHTTPError(422, pkg.BadRequestError{Message: err.Error()}.Errors())
 		}
 
-		err = repositories.SetPin(uint(id), strings.TrimSpace(request.Pin))
+		err = accounts.SetPin(uint(id), strings.TrimSpace(request.Pin))
 		if err != nil {
 			return echo.NewHTTPError(400, pkg.BadRequestError{Message: err.Error()}.Errors())
 		}
@@ -194,7 +194,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			}
 		}
 
-		account, err := Account.SearchByIdOrPhone(request.Search)
+		account, err := accounts.SearchByIdOrPhone(request.Search)
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
@@ -208,7 +208,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return err
 		}
 
-		accounts, err := Account.SearchByPhone(request.Search)
+		accounts, err := accounts.SearchByPhone(request.Search)
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
@@ -239,7 +239,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			}
 		}
 
-		account, err := Account.Ancestors(uint(id), uint(levelLimit+1))
+		account, err := accounts.ReadAncestors(uint(id), uint(levelLimit+1))
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
@@ -269,7 +269,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			}
 		}
 
-		account, err := Account.Descendants(uint(id), uint(levelLimit+1))
+		account, err := accounts.ReadDescendants(uint(id), uint(levelLimit+1))
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
@@ -288,7 +288,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return context.JSON(http.StatusUnprocessableEntity, utils.IdValidationErrorResponse(request.Id))
 		}
 
-		exists := repositories.HasPin(uint(id))
+		exists := accounts.HasPin(uint(id))
 		if exists {
 			return utils.HandleSuccessResponse(context, true)
 		}
@@ -307,7 +307,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return context.JSON(http.StatusUnprocessableEntity, utils.IdValidationErrorResponse(request.Id))
 		}
 
-		user, err := repositories.UpdateProfile(uint(id), request.Name)
+		user, err := accounts.UpdateProfile(uint(id), request.Name)
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
@@ -326,7 +326,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return context.JSON(http.StatusUnprocessableEntity, utils.IdValidationErrorResponse(request.Id))
 		}
 
-		err = repositories.ResetPin(uint(id))
+		err = accounts.ResetPin(uint(id))
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}

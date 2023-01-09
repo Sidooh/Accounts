@@ -1,7 +1,8 @@
-package user
+package users
 
 import (
 	"accounts.sidooh/pkg/db"
+	"accounts.sidooh/pkg/entities"
 	"accounts.sidooh/utils"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
@@ -16,7 +17,7 @@ func TestMain(m *testing.M) {
 	db.Init()
 	conn := db.Connection()
 
-	err := conn.AutoMigrate(&Model{})
+	err := conn.AutoMigrate(&entities.User{})
 	if err != nil {
 		panic(err)
 	}
@@ -24,13 +25,13 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func createUser(arg Model) (Model, error) {
-	user, err := CreateUser(arg)
+func createUser(arg entities.User) (entities.User, error) {
+	user, err := Create(arg)
 	return user, err
 }
 
-func createRandomUser(t *testing.T, password string) Model {
-	arg := Model{
+func createRandomUser(t *testing.T, password string) entities.User {
+	arg := entities.User{
 		Username: utils.RandomName(),
 		Email:    utils.RandomEmail(),
 		Password: password,
@@ -49,14 +50,14 @@ func createRandomUser(t *testing.T, password string) Model {
 func refreshDatabase() {
 	//Start clean slate
 	conn := db.Connection()
-	conn.Where("1 = 1").Delete(&Model{})
+	conn.Where("1 = 1").Delete(&entities.User{})
 }
 
 func TestAll(t *testing.T) {
 	user1 := createRandomUser(t, utils.RandomString(6))
 	user2 := createRandomUser(t, utils.RandomString(6))
 
-	users, err := All()
+	users, err := ReadAll()
 	require.NoError(t, err)
 	require.NotEmpty(t, users)
 	require.GreaterOrEqual(t, len(users), 2)
@@ -71,7 +72,7 @@ func TestCreateUser(t *testing.T) {
 
 func TestFindUserById(t *testing.T) {
 	user1 := createRandomUser(t, utils.RandomString(6))
-	user2, err := ById(user1.ID)
+	user2, err := ReadById(user1.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, user2)
 
@@ -85,7 +86,7 @@ func TestFindUserById(t *testing.T) {
 
 func TestFindUserByEmail(t *testing.T) {
 	user1 := createRandomUser(t, utils.RandomString(6))
-	user2, err := FindUserByEmail(user1.Email)
+	user2, err := ReadByEmail(user1.Email)
 	require.NoError(t, err)
 	require.NotEmpty(t, user2)
 
@@ -101,7 +102,7 @@ func TestAuthUser(t *testing.T) {
 	password := utils.RandomString(6)
 	user1 := createRandomUser(t, password)
 
-	user2, err := AuthUser(Model{Email: user1.Email, Password: password})
+	user2, err := Authenticate(entities.User{Email: user1.Email, Password: password})
 
 	require.NoError(t, err)
 	require.NotEmpty(t, user2)
@@ -118,13 +119,13 @@ func TestSearchByEmail(t *testing.T) {
 	refreshDatabase()
 
 	password := utils.RandomString(6)
-	arg := Model{
+	arg := entities.User{
 		Email:    "ab@a.a",
 		Password: password,
 	}
 	user1, err := createUser(arg)
 
-	arg = Model{
+	arg = entities.User{
 		Username: utils.RandomName(),
 		Email:    "a@a.a",
 		Password: password,

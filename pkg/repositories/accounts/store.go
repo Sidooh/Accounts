@@ -1,53 +1,16 @@
-package account
+package accounts
 
 import (
-	"accounts.sidooh/models"
-	"accounts.sidooh/models/user"
 	"accounts.sidooh/pkg/db"
+	"accounts.sidooh/pkg/entities"
 	"accounts.sidooh/utils"
-	"database/sql"
 	"errors"
 	"fmt"
-	"gorm.io/gorm"
 	"time"
 )
 
-type Model struct {
-	models.ModelID
-
-	Phone     string         `json:"phone" gorm:"uniqueIndex; size:16"`
-	Active    bool           `json:"active"`
-	Pin       sql.NullString `json:"-"`
-	TelcoID   int            `json:"-"`
-	InviterID uint           `json:"inviter_id,omitempty"`
-	UserID    uint           `json:"user_id,omitempty"`
-
-	InviteCode string `json:"invite_code,omitempty"`
-
-	models.ModelTimeStamps
-}
-
-type ModelWithUser struct {
-	Model
-
-	User *user.Model `json:"user"`
-}
-
-type InviteModel struct {
-	Model
-
-	Level int `json:"level"`
-}
-
-func (*Model) TableName() string {
-	return "accounts"
-}
-func (ModelWithUser) TableName() string {
-	return "accounts"
-}
-
-func All() ([]Model, error) {
-	var accounts []Model
+func ReadAll() ([]entities.Account, error) {
+	var accounts []entities.Account
 	result := db.Connection().Order("id desc").Find(&accounts)
 	if result.Error != nil {
 		return accounts, result.Error
@@ -56,8 +19,8 @@ func All() ([]Model, error) {
 	return accounts, nil
 }
 
-func AllWithUser(limit int) ([]interface{}, error) {
-	var accountsWithUsers []ModelWithUser
+func ReadAllWithUser(limit int) ([]interface{}, error) {
+	var accountsWithUsers []entities.AccountWithUser
 	query := db.Connection().Joins("User").Order("id desc")
 
 	if limit > 0 {
@@ -73,7 +36,7 @@ func AllWithUser(limit int) ([]interface{}, error) {
 	var accounts []interface{}
 	for _, accountWithUser := range accountsWithUsers {
 		if accountWithUser.UserID == 0 {
-			accountModel := new(Model)
+			accountModel := new(entities.Account)
 			utils.ConvertStruct(accountWithUser, accountModel)
 			accounts = append(accounts, accountModel)
 		} else {
@@ -85,26 +48,26 @@ func AllWithUser(limit int) ([]interface{}, error) {
 }
 
 // TODO: Check whether using pointers here saves memory
-func Create(a Model) (Model, error) {
-	_, err := ByPhone(a.Phone)
+func CreateAccount(a entities.Account) (entities.Account, error) {
+	_, err := ReadByPhone(a.Phone)
 	if err == nil {
-		return Model{}, errors.New("phone is already taken")
+		return entities.Account{}, errors.New("phone is already taken")
 	}
 
 	result := db.Connection().Omit("UserID").Create(&a)
 	if result.Error != nil {
-		return Model{}, errors.New("error creating account")
+		return entities.Account{}, errors.New("error creating account")
 	}
 
 	return a, nil
 }
 
-func ById(id uint) (Model, error) {
+func ReadById(id uint) (entities.Account, error) {
 	return find("id = ?", id)
 }
 
-func ByIdWithUser(id uint) (*ModelWithUser, error) {
-	accountWithUser := new(ModelWithUser)
+func ReadWithUser(id uint) (*entities.AccountWithUser, error) {
+	accountWithUser := new(entities.AccountWithUser)
 
 	result := db.Connection().Joins("User").First(&accountWithUser, id)
 	if result.Error != nil {
@@ -114,12 +77,23 @@ func ByIdWithUser(id uint) (*ModelWithUser, error) {
 	return accountWithUser, nil
 }
 
-func ByPhone(phone string) (Model, error) {
+func ReadWithUserAndInviter(id uint) (*entities.AccountWithUserAndInviter, error) {
+	accountWithUserAndInviter := new(entities.AccountWithUserAndInviter)
+
+	result := db.Connection().Joins("User").Joins("Inviter").First(&accountWithUserAndInviter, id)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return accountWithUserAndInviter, nil
+}
+
+func ReadByPhone(phone string) (entities.Account, error) {
 	return find("phone = ?", phone)
 }
 
-func ByPhoneWithUser(phone string) (ModelWithUser, error) {
-	account := ModelWithUser{}
+func ReadByPhoneWithUser(phone string) (entities.AccountWithUser, error) {
+	account := entities.AccountWithUser{}
 
 	result := db.Connection().Where("accounts.phone = ?", phone).Joins("User").First(&account)
 	if result.Error != nil {
@@ -129,13 +103,13 @@ func ByPhoneWithUser(phone string) (ModelWithUser, error) {
 	return account, nil
 }
 
-func SearchByPhone(phone string) ([]Model, error) {
+func SearchByPhone(phone string) ([]entities.Account, error) {
 	//%%  a literal percent sign; consumes no value
-	return findAll("phone LIKE ?", fmt.Sprintf("%%%s%%", phone))
+	return findMany("phone LIKE ?", fmt.Sprintf("%%%s%%", phone))
 }
 
-func SearchByIdOrPhone(search string) (Model, error) {
-	account := Model{}
+func SearchByIdOrPhone(search string) (entities.Account, error) {
+	account := entities.Account{}
 
 	result := db.Connection().Where("id = ? OR phone = ?", search, search).First(&account)
 	if result.Error != nil {
@@ -146,8 +120,8 @@ func SearchByIdOrPhone(search string) (Model, error) {
 
 }
 
-func findAll(query interface{}, args interface{}) ([]Model, error) {
-	var accounts []Model
+func findMany(query interface{}, args interface{}) ([]entities.Account, error) {
+	var accounts []entities.Account
 
 	result := db.Connection().Where(query, args).Order("id desc").Find(&accounts)
 	if result.Error != nil {
@@ -157,8 +131,8 @@ func findAll(query interface{}, args interface{}) ([]Model, error) {
 	return accounts, nil
 }
 
-func find(query interface{}, args ...interface{}) (Model, error) {
-	account := Model{}
+func find(query interface{}, args ...interface{}) (entities.Account, error) {
+	account := entities.Account{}
 
 	result := db.Connection().Where(query, args).First(&account)
 	if result.Error != nil {
@@ -168,21 +142,13 @@ func find(query interface{}, args ...interface{}) (Model, error) {
 	return account, nil
 }
 
-func (a *Model) Save() *gorm.DB {
-	return db.Connection().Save(&a)
-}
-
-func (a *Model) Update(column string, value string) *gorm.DB {
-	return db.Connection().Model(&a).Update(column, value)
-}
-
 // Referral/Invite Queries
 
 // Ancestors 1. Get ancestors
-func Ancestors(id uint, levelLimit uint) ([]InviteModel, error) {
+func ReadAncestors(id uint, levelLimit uint) ([]entities.InviteModel, error) {
 	conn := db.Connection()
 
-	var accounts []InviteModel
+	var accounts []entities.InviteModel
 	conn.Raw(
 		"WITH RECURSIVE ancestors (id, phone, inviter_id, level) AS\n"+
 			"("+
@@ -206,10 +172,10 @@ func Ancestors(id uint, levelLimit uint) ([]InviteModel, error) {
 }
 
 // Descendants 2. Get descendants
-func Descendants(id uint, levelLimit uint) ([]InviteModel, error) {
+func ReadDescendants(id uint, levelLimit uint) ([]entities.InviteModel, error) {
 	conn := db.Connection()
 
-	var accounts []InviteModel
+	var accounts []entities.InviteModel
 
 	conn.Raw(
 		"WITH RECURSIVE descendants (id, phone, inviter_id, level) AS\n"+
@@ -233,7 +199,7 @@ func Descendants(id uint, levelLimit uint) ([]InviteModel, error) {
 	return accounts, nil
 }
 
-func TimeSeriesCount(limit int) (interface{}, error) {
+func ReadAccountsTimeSeriesCount(limit int) (interface{}, error) {
 	var accounts []struct {
 		Date  int `json:"date"`
 		Count int `json:"count"`
@@ -251,7 +217,7 @@ SELECT EXTRACT(YEAR_MONTH FROM created_at) as date, COUNT(id) as count
 	return accounts, nil
 }
 
-func Summaries() (interface{}, error) {
+func ReadAccountsSummaries() (interface{}, error) {
 	var accounts struct {
 		Today int `json:"today"`
 		Month int `json:"month"`

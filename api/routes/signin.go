@@ -2,8 +2,9 @@ package routes
 
 import (
 	"accounts.sidooh/api/middlewares"
-	User "accounts.sidooh/models/user"
 	"accounts.sidooh/pkg"
+	"accounts.sidooh/pkg/entities"
+	"accounts.sidooh/pkg/repositories/users"
 	"accounts.sidooh/utils"
 	"accounts.sidooh/utils/constants"
 	"github.com/labstack/echo/v4"
@@ -31,7 +32,7 @@ func RegisterSignInHandler(e *echo.Echo) {
 			return err
 		}
 
-		user, err := User.AuthUser(User.Model{
+		user, err := users.Authenticate(entities.User{
 			Email:    request.Email,
 			Password: strings.TrimSpace(request.Password),
 		})

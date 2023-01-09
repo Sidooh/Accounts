@@ -1,7 +1,8 @@
-package account
+package accounts
 
 import (
 	"accounts.sidooh/pkg/db"
+	"accounts.sidooh/pkg/entities"
 	"accounts.sidooh/utils"
 	"database/sql"
 	"github.com/spf13/viper"
@@ -17,7 +18,7 @@ func TestMain(m *testing.M) {
 	db.Init()
 	conn := db.Connection()
 
-	err := conn.AutoMigrate(&Model{})
+	err := conn.AutoMigrate(&entities.Account{})
 	if err != nil {
 		panic(err)
 	}
@@ -25,8 +26,8 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func CreateRandomAccount(t *testing.T, phone string) Model {
-	arg := Model{
+func CreateRandomAccount(t *testing.T, phone string) entities.Account {
+	arg := entities.Account{
 		Phone: phone,
 	}
 
@@ -45,14 +46,14 @@ func CreateRandomAccount(t *testing.T, phone string) Model {
 func refreshDatabase() {
 	//Start clean slate
 	conn := db.Connection()
-	conn.Where("1 = 1").Delete(&Model{})
+	conn.Where("1 = 1").Delete(&entities.Account{})
 }
 
 func TestAll(t *testing.T) {
 	account1 := CreateRandomAccount(t, utils.RandomPhone())
 	account2 := CreateRandomAccount(t, utils.RandomPhone())
 
-	accounts, err := All()
+	accounts, err := ReadAll()
 	require.NoError(t, err)
 	require.NotEmpty(t, accounts)
 	require.GreaterOrEqual(t, len(accounts), 2)
@@ -67,7 +68,7 @@ func TestCreate(t *testing.T) {
 
 func TestById(t *testing.T) {
 	account1 := CreateRandomAccount(t, utils.RandomPhone())
-	account2, err := ById(account1.ID)
+	account2, err := ReadById(account1.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, account2)
 
@@ -81,7 +82,7 @@ func TestById(t *testing.T) {
 
 func TestByPhone(t *testing.T) {
 	account1 := CreateRandomAccount(t, utils.RandomPhone())
-	account2, err := ByPhone(account1.Phone)
+	account2, err := ReadByPhone(account1.Phone)
 	require.NoError(t, err)
 	require.NotEmpty(t, account2)
 

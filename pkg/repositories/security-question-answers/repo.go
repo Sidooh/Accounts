@@ -1,8 +1,7 @@
-package repositories
+package security_question_answers
 
 import (
-	Account "accounts.sidooh/models/account"
-	SecurityQuestionAnswer "accounts.sidooh/models/security_question_answer"
+	"accounts.sidooh/pkg/repositories/accounts"
 	"accounts.sidooh/utils"
 	"errors"
 	"strings"
@@ -10,13 +9,13 @@ import (
 
 func CheckAnswer(id uint, questionId uint, answer string) error {
 	//	Get Account
-	_, err := Account.ById(id)
+	_, err := accounts.ReadById(id)
 	if err != nil {
 		return errors.New("invalid credentials")
 	}
 
 	//  Get Answer
-	questionAnswer, err := SecurityQuestionAnswer.ByAccountAndQuestion(id, questionId)
+	questionAnswer, err := ReadByAccountAndQuestion(id, questionId)
 	if err != nil {
 		return errors.New("invalid question")
 	}
@@ -32,13 +31,13 @@ func CheckAnswer(id uint, questionId uint, answer string) error {
 
 func HasSecurityQuestions(id uint) error {
 	//	Get Account
-	_, err := Account.ById(id)
+	_, err := accounts.ReadById(id)
 	if err != nil {
 		return errors.New("invalid credentials")
 	}
 
 	//	Check Security Questions exists
-	questionAnswers, err := SecurityQuestionAnswer.ByAccount(id)
+	questionAnswers, err := ReadByAccountId(id)
 	if err != nil {
 		return errors.New("invalid account or questions")
 	}

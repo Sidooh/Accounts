@@ -1,7 +1,6 @@
-package repositories
+package users
 
 import (
-	User "accounts.sidooh/models/user"
 	"accounts.sidooh/pkg/clients"
 	"accounts.sidooh/utils"
 	"errors"
@@ -9,7 +8,7 @@ import (
 )
 
 func ResetPassword(id uint) error {
-	user, err := User.ById(id)
+	user, err := ReadById(id)
 	if err != nil {
 		return errors.New("invalid credentials")
 	}

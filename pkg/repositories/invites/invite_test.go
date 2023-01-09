@@ -1,8 +1,8 @@
-package invite
+package invites
 
 import (
-	Account "accounts.sidooh/models/account"
 	"accounts.sidooh/pkg/db"
+	"accounts.sidooh/pkg/entities"
 	"accounts.sidooh/utils"
 	"accounts.sidooh/utils/constants"
 	"github.com/SamuelTissot/sqltime"
@@ -21,7 +21,7 @@ func TestMain(m *testing.M) {
 	db.Init()
 	conn := db.Connection()
 
-	err := conn.AutoMigrate(&Model{}, &Account.Model{})
+	err := conn.AutoMigrate(&entities.Invite{}, &entities.Account{})
 	if err != nil {
 		panic(err)
 	}
@@ -29,13 +29,15 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func createRandomInvite(t *testing.T, phone string) Model {
-	account, err := Account.Create(Account.Model{
+func createRandomInvite(t *testing.T, phone string) entities.Invite {
+	account := entities.Account{
 		Phone: utils.RandomPhone(),
-	})
-	require.NoError(t, err)
+	}
+	res := db.Connection().Omit("UserID").Create(&account)
 
-	arg := Model{
+	require.NoError(t, res.Error)
+
+	arg := entities.Invite{
 		InviterID: account.ID,
 		Phone:     phone,
 	}
@@ -57,7 +59,7 @@ func createRandomInvite(t *testing.T, phone string) Model {
 func refreshDatabase() {
 	//Start clean slate
 	conn := db.Connection()
-	conn.Where("1 = 1").Delete(&Model{})
+	conn.Where("1 = 1").Delete(&entities.Invite{})
 }
 
 func TestAll(t *testing.T) {
@@ -66,7 +68,7 @@ func TestAll(t *testing.T) {
 	invite1 := createRandomInvite(t, utils.RandomPhone())
 	invite2 := createRandomInvite(t, utils.RandomPhone())
 
-	invites, err := All(constants.DEFAULT_QUERY_LIMIT)
+	invites, err := ReadAll(constants.DEFAULT_QUERY_LIMIT)
 	require.NoError(t, err)
 	require.NotEmpty(t, invites)
 	require.Equal(t, len(invites), 2)
@@ -81,18 +83,20 @@ func TestCreate(t *testing.T) {
 
 func TestCreateWithInviteCode(t *testing.T) {
 	phone := utils.RandomPhone()
-	account, err := Account.Create(Account.Model{
+
+	account := entities.Account{
 		Phone:      phone,
 		InviteCode: "TEST",
-	})
+	}
+	res := db.Connection().Omit("UserID").Create(&account)
 
-	require.NoError(t, err)
+	require.NoError(t, res.Error)
 	require.NotEmpty(t, account)
 }
 
 func TestById(t *testing.T) {
 	invite1 := createRandomInvite(t, utils.RandomPhone())
-	invite2, err := ById(invite1.ID)
+	invite2, err := ReadById(invite1.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, invite2)
 
@@ -106,7 +110,7 @@ func TestById(t *testing.T) {
 
 func TestByPhone(t *testing.T) {
 	invite1 := createRandomInvite(t, utils.RandomPhone())
-	invite2, err := ByPhone(invite1.Phone)
+	invite2, err := ReadByPhone(invite1.Phone)
 	require.NoError(t, err)
 	require.NotEmpty(t, invite2)
 
@@ -130,7 +134,7 @@ func TestUnexpiredByPhone(t *testing.T) {
 	activeInvite.Save()
 	require.NotEmpty(t, activeInvite)
 
-	invite, err := UnexpiredByPhone(phone)
+	invite, err := ReadUnexpiredByPhone(phone)
 	require.Error(t, err)
 	require.Empty(t, invite)
 
@@ -140,7 +144,7 @@ func TestUnexpiredByPhone(t *testing.T) {
 	pendingInvite := createRandomInvite(t, phone)
 	require.NotEmpty(t, pendingInvite)
 
-	invite, err = UnexpiredByPhone(phone)
+	invite, err = ReadUnexpiredByPhone(phone)
 	require.NoError(t, err)
 	require.NotEmpty(t, invite)
 
@@ -156,7 +160,7 @@ func TestUnexpiredByPhone(t *testing.T) {
 	timeExpiredInvite.Save()
 	require.NotEmpty(t, timeExpiredInvite)
 
-	invite, err = UnexpiredByPhone(phone)
+	invite, err = ReadUnexpiredByPhone(phone)
 	require.Error(t, err)
 	require.Empty(t, invite)
 }
@@ -187,7 +191,7 @@ func TestMarkExpired(t *testing.T) {
 	err := MarkExpired()
 	require.NoError(t, err)
 
-	invites, err := Unexpired()
+	invites, err := ReadUnexpired()
 	require.NoError(t, err)
 	require.NotEmpty(t, invites)
 	require.Equal(t, len(invites), 2)
