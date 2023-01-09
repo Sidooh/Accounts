@@ -1,9 +1,9 @@
 package user
 
 import (
-	"accounts.sidooh/db"
 	"accounts.sidooh/models"
-	"accounts.sidooh/util"
+	"accounts.sidooh/pkg/db"
+	"accounts.sidooh/utils"
 	"errors"
 	"fmt"
 	"github.com/SamuelTissot/sqltime"
@@ -49,7 +49,7 @@ func CreateUser(u Model) (Model, error) {
 		return Model{}, errors.New("email is already taken")
 	}
 
-	u.Password, _ = util.ToHash(u.Password)
+	u.Password, _ = utils.ToHash(u.Password)
 
 	result := conn.Create(&u)
 	if result.Error != nil {
@@ -66,7 +66,7 @@ func AuthUser(u Model) (Model, error) {
 		return Model{}, errors.New("invalid credentials")
 	}
 
-	res := util.Compare(user.Password, u.Password)
+	res := utils.Compare(user.Password, u.Password)
 
 	if !res {
 		return Model{}, errors.New("invalid credentials")

@@ -1,8 +1,8 @@
 package account
 
 import (
-	"accounts.sidooh/db"
-	"accounts.sidooh/util"
+	"accounts.sidooh/pkg/db"
+	"accounts.sidooh/utils"
 	"database/sql"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
@@ -49,8 +49,8 @@ func refreshDatabase() {
 }
 
 func TestAll(t *testing.T) {
-	account1 := CreateRandomAccount(t, util.RandomPhone())
-	account2 := CreateRandomAccount(t, util.RandomPhone())
+	account1 := CreateRandomAccount(t, utils.RandomPhone())
+	account2 := CreateRandomAccount(t, utils.RandomPhone())
 
 	accounts, err := All()
 	require.NoError(t, err)
@@ -62,11 +62,11 @@ func TestAll(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-	CreateRandomAccount(t, util.RandomPhone())
+	CreateRandomAccount(t, utils.RandomPhone())
 }
 
 func TestById(t *testing.T) {
-	account1 := CreateRandomAccount(t, util.RandomPhone())
+	account1 := CreateRandomAccount(t, utils.RandomPhone())
 	account2, err := ById(account1.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, account2)
@@ -80,7 +80,7 @@ func TestById(t *testing.T) {
 }
 
 func TestByPhone(t *testing.T) {
-	account1 := CreateRandomAccount(t, util.RandomPhone())
+	account1 := CreateRandomAccount(t, utils.RandomPhone())
 	account2, err := ByPhone(account1.Phone)
 	require.NoError(t, err)
 	require.NotEmpty(t, account2)
@@ -94,7 +94,7 @@ func TestByPhone(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	account := CreateRandomAccount(t, util.RandomPhone())
+	account := CreateRandomAccount(t, utils.RandomPhone())
 	require.NotEmpty(t, account)
 
 	result := account.Update("pin", "new_pin")

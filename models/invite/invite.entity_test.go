@@ -1,10 +1,10 @@
 package invite
 
 import (
-	"accounts.sidooh/db"
 	Account "accounts.sidooh/models/account"
-	"accounts.sidooh/util"
-	"accounts.sidooh/util/constants"
+	"accounts.sidooh/pkg/db"
+	"accounts.sidooh/utils"
+	"accounts.sidooh/utils/constants"
 	"github.com/SamuelTissot/sqltime"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
@@ -14,7 +14,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	util.SetupConfig("../../")
+	utils.SetupConfig("../../")
 
 	viper.Set("APP_ENV", "TEST")
 
@@ -31,7 +31,7 @@ func TestMain(m *testing.M) {
 
 func createRandomInvite(t *testing.T, phone string) Model {
 	account, err := Account.Create(Account.Model{
-		Phone: util.RandomPhone(),
+		Phone: utils.RandomPhone(),
 	})
 	require.NoError(t, err)
 
@@ -63,8 +63,8 @@ func refreshDatabase() {
 func TestAll(t *testing.T) {
 	refreshDatabase()
 
-	invite1 := createRandomInvite(t, util.RandomPhone())
-	invite2 := createRandomInvite(t, util.RandomPhone())
+	invite1 := createRandomInvite(t, utils.RandomPhone())
+	invite2 := createRandomInvite(t, utils.RandomPhone())
 
 	invites, err := All(constants.DEFAULT_QUERY_LIMIT)
 	require.NoError(t, err)
@@ -76,11 +76,11 @@ func TestAll(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-	createRandomInvite(t, util.RandomPhone())
+	createRandomInvite(t, utils.RandomPhone())
 }
 
 func TestCreateWithInviteCode(t *testing.T) {
-	phone := util.RandomPhone()
+	phone := utils.RandomPhone()
 	account, err := Account.Create(Account.Model{
 		Phone:      phone,
 		InviteCode: "TEST",
@@ -91,7 +91,7 @@ func TestCreateWithInviteCode(t *testing.T) {
 }
 
 func TestById(t *testing.T) {
-	invite1 := createRandomInvite(t, util.RandomPhone())
+	invite1 := createRandomInvite(t, utils.RandomPhone())
 	invite2, err := ById(invite1.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, invite2)
@@ -105,7 +105,7 @@ func TestById(t *testing.T) {
 }
 
 func TestByPhone(t *testing.T) {
-	invite1 := createRandomInvite(t, util.RandomPhone())
+	invite1 := createRandomInvite(t, utils.RandomPhone())
 	invite2, err := ByPhone(invite1.Phone)
 	require.NoError(t, err)
 	require.NotEmpty(t, invite2)
@@ -123,7 +123,7 @@ func TestUnexpiredByPhone(t *testing.T) {
 	refreshDatabase()
 
 	// Scenario 1 - active status
-	phone := util.RandomPhone()
+	phone := utils.RandomPhone()
 
 	activeInvite := createRandomInvite(t, phone)
 	activeInvite.Status = constants.ACTIVE
@@ -135,7 +135,7 @@ func TestUnexpiredByPhone(t *testing.T) {
 	require.Empty(t, invite)
 
 	// Scenario 2 - pending status
-	phone = util.RandomPhone()
+	phone = utils.RandomPhone()
 
 	pendingInvite := createRandomInvite(t, phone)
 	require.NotEmpty(t, pendingInvite)
@@ -147,7 +147,7 @@ func TestUnexpiredByPhone(t *testing.T) {
 	require.Equal(t, invite, pendingInvite)
 
 	// Scenario 3 - time has passed
-	phone = util.RandomPhone()
+	phone = utils.RandomPhone()
 
 	timeExpiredInvite := createRandomInvite(t, phone)
 	timeExpiredInvite.CreatedAt = sqltime.Time{
@@ -169,15 +169,15 @@ func TestMarkExpired(t *testing.T) {
 	// Active invite
 	// pending but non time-expired invite
 	// pending and time-expired <- to be removed
-	activeInvite := createRandomInvite(t, util.RandomPhone())
+	activeInvite := createRandomInvite(t, utils.RandomPhone())
 	activeInvite.Status = constants.ACTIVE
 	activeInvite.Save()
 	require.NotEmpty(t, activeInvite)
 
-	pendingInvite := createRandomInvite(t, util.RandomPhone())
+	pendingInvite := createRandomInvite(t, utils.RandomPhone())
 	require.NotEmpty(t, pendingInvite)
 
-	timeExpiredInvite := createRandomInvite(t, util.RandomPhone())
+	timeExpiredInvite := createRandomInvite(t, utils.RandomPhone())
 	timeExpiredInvite.CreatedAt = sqltime.Time{
 		Time: time.Now().Add(-48 * time.Hour),
 	}

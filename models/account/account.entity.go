@@ -1,10 +1,10 @@
 package account
 
 import (
-	"accounts.sidooh/db"
 	"accounts.sidooh/models"
 	"accounts.sidooh/models/user"
-	"accounts.sidooh/util"
+	"accounts.sidooh/pkg/db"
+	"accounts.sidooh/utils"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -74,7 +74,7 @@ func AllWithUser(limit int) ([]interface{}, error) {
 	for _, accountWithUser := range accountsWithUsers {
 		if accountWithUser.UserID == 0 {
 			accountModel := new(Model)
-			util.ConvertStruct(accountWithUser, accountModel)
+			utils.ConvertStruct(accountWithUser, accountModel)
 			accounts = append(accounts, accountModel)
 		} else {
 			accounts = append(accounts, accountWithUser)

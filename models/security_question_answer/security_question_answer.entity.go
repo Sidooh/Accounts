@@ -1,11 +1,11 @@
 package security_question_answer
 
 import (
-	"accounts.sidooh/db"
 	"accounts.sidooh/models"
 	Account "accounts.sidooh/models/account"
 	SecurityQuestion "accounts.sidooh/models/security_question"
-	"accounts.sidooh/util"
+	"accounts.sidooh/pkg/db"
+	"accounts.sidooh/utils"
 	"errors"
 	"strings"
 )
@@ -54,7 +54,7 @@ func Create(s Model) (Model, error) {
 		return Model{}, errors.New("question and answer already exists")
 	}
 
-	s.Answer, _ = util.ToHash(strings.ToLower(s.Answer))
+	s.Answer, _ = utils.ToHash(strings.ToLower(s.Answer))
 
 	result := db.Connection().Create(&s)
 	if result.Error != nil {

@@ -1,8 +1,8 @@
 package user
 
 import (
-	"accounts.sidooh/db"
-	"accounts.sidooh/util"
+	"accounts.sidooh/pkg/db"
+	"accounts.sidooh/utils"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	"os"
@@ -31,8 +31,8 @@ func createUser(arg Model) (Model, error) {
 
 func createRandomUser(t *testing.T, password string) Model {
 	arg := Model{
-		Username: util.RandomName(),
-		Email:    util.RandomEmail(),
+		Username: utils.RandomName(),
+		Email:    utils.RandomEmail(),
 		Password: password,
 	}
 
@@ -53,8 +53,8 @@ func refreshDatabase() {
 }
 
 func TestAll(t *testing.T) {
-	user1 := createRandomUser(t, util.RandomString(6))
-	user2 := createRandomUser(t, util.RandomString(6))
+	user1 := createRandomUser(t, utils.RandomString(6))
+	user2 := createRandomUser(t, utils.RandomString(6))
 
 	users, err := All()
 	require.NoError(t, err)
@@ -66,11 +66,11 @@ func TestAll(t *testing.T) {
 }
 
 func TestCreateUser(t *testing.T) {
-	createRandomUser(t, util.RandomString(6))
+	createRandomUser(t, utils.RandomString(6))
 }
 
 func TestFindUserById(t *testing.T) {
-	user1 := createRandomUser(t, util.RandomString(6))
+	user1 := createRandomUser(t, utils.RandomString(6))
 	user2, err := ById(user1.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, user2)
@@ -84,7 +84,7 @@ func TestFindUserById(t *testing.T) {
 }
 
 func TestFindUserByEmail(t *testing.T) {
-	user1 := createRandomUser(t, util.RandomString(6))
+	user1 := createRandomUser(t, utils.RandomString(6))
 	user2, err := FindUserByEmail(user1.Email)
 	require.NoError(t, err)
 	require.NotEmpty(t, user2)
@@ -98,7 +98,7 @@ func TestFindUserByEmail(t *testing.T) {
 }
 
 func TestAuthUser(t *testing.T) {
-	password := util.RandomString(6)
+	password := utils.RandomString(6)
 	user1 := createRandomUser(t, password)
 
 	user2, err := AuthUser(Model{Email: user1.Email, Password: password})
@@ -117,7 +117,7 @@ func TestAuthUser(t *testing.T) {
 func TestSearchByEmail(t *testing.T) {
 	refreshDatabase()
 
-	password := util.RandomString(6)
+	password := utils.RandomString(6)
 	arg := Model{
 		Email:    "ab@a.a",
 		Password: password,
@@ -125,7 +125,7 @@ func TestSearchByEmail(t *testing.T) {
 	user1, err := createUser(arg)
 
 	arg = Model{
-		Username: util.RandomName(),
+		Username: utils.RandomName(),
 		Email:    "a@a.a",
 		Password: password,
 	}

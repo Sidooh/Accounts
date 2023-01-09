@@ -1,8 +1,8 @@
 package security_question
 
 import (
-	"accounts.sidooh/db"
 	"accounts.sidooh/models"
+	"accounts.sidooh/pkg/db"
 	"errors"
 )
 

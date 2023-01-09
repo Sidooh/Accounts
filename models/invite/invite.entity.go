@@ -1,10 +1,10 @@
 package invite
 
 import (
-	"accounts.sidooh/db"
 	"accounts.sidooh/models"
 	"accounts.sidooh/models/account"
-	"accounts.sidooh/util/constants"
+	"accounts.sidooh/pkg/db"
+	"accounts.sidooh/utils/constants"
 	"errors"
 	"fmt"
 	"github.com/spf13/viper"
