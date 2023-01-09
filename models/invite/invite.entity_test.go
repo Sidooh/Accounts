@@ -66,7 +66,7 @@ func TestAll(t *testing.T) {
 	invite1 := createRandomInvite(t, util.RandomPhone())
 	invite2 := createRandomInvite(t, util.RandomPhone())
 
-	invites, err := All()
+	invites, err := All(constants.DEFAULT_QUERY_LIMIT)
 	require.NoError(t, err)
 	require.NotEmpty(t, invites)
 	require.Equal(t, len(invites), 2)

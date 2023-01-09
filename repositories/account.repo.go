@@ -133,9 +133,9 @@ func UpdateProfile(id uint, name string) (User.Model, error) {
 	}
 }
 
-func GetAccounts(withUser bool) (interface{}, error) {
+func GetAccounts(withUser bool, limit int) (interface{}, error) {
 	if withUser {
-		return Account.AllWithUser()
+		return Account.AllWithUser(limit)
 	} else {
 		return Account.All()
 	}

@@ -64,7 +64,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return err
 		}
 
-		accounts, err := repositories.GetAccounts(request.WithUser == "true")
+		accounts, err := repositories.GetAccounts(request.WithUser == "true", constants.DEFAULT_QUERY_LIMIT)
 		if err != nil {
 			return util.HandleErrorResponse(context, err)
 		}

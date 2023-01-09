@@ -70,22 +70,19 @@ func RegisterDashboardHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) 
 		}
 
 		return util.HandleSuccessResponse(context, summaries)
-
 	}, authMiddleware)
 
 	e.GET(constants.API_DASHBOARD_URL+"/recent-accounts", func(context echo.Context) error {
-		data, err := repositories.GetAccounts(true)
+		data, err := repositories.GetAccounts(true, 20)
 		if err != nil {
 			return util.HandleErrorResponse(context, err)
 		}
 
-		s := data.([]interface{})
-
-		return util.HandleSuccessResponse(context, s[:15])
+		return util.HandleSuccessResponse(context, data)
 	}, authMiddleware)
 
 	e.GET(constants.API_DASHBOARD_URL+"/recent-invites", func(context echo.Context) error {
-		s, err := invite.All()
+		s, err := invite.All(20)
 		if err != nil {
 			return util.HandleErrorResponse(context, err)
 		}

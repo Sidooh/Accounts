@@ -56,9 +56,16 @@ func All() ([]Model, error) {
 	return accounts, nil
 }
 
-func AllWithUser() ([]interface{}, error) {
+func AllWithUser(limit int) ([]interface{}, error) {
 	var accountsWithUsers []ModelWithUser
-	result := db.Connection().Joins("User").Order("id desc").Find(&accountsWithUsers)
+	query := db.Connection().Joins("User").Order("id desc")
+
+	if limit > 0 {
+		query = query.Limit(limit)
+	}
+
+	result := query.Find(&accountsWithUsers)
+
 	if result.Error != nil {
 		return nil, result.Error
 	}
