@@ -17,7 +17,8 @@ require (
 	github.com/ttacon/libphonenumber v1.2.1
 	go.mongodb.org/mongo-driver v1.7.4
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
-	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f
+	golang.org/x/exp v0.0.0-20230108222341-4b8118a2686a
+	golang.org/x/net v0.1.0
 	golang.org/x/time v0.0.0-20201208040808-7e3f01d25324
 	gorm.io/driver/mysql v1.2.3
 	gorm.io/driver/sqlite v1.2.6
@@ -63,8 +64,8 @@ require (
 	github.com/xdg-go/stringprep v1.0.2 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20211210111614-af8b64212486 // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/sys v0.1.0 // indirect
+	golang.org/x/text v0.4.0 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
