@@ -40,7 +40,6 @@ func RegisterDashboardHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) 
 		}
 
 		return utils.HandleSuccessResponse(context, chart)
-
 	}, authMiddleware)
 
 	e.GET(constants.API_DASHBOARD_URL+"/summaries", func(context echo.Context) error {

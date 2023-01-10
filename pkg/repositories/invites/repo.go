@@ -1,16 +1,16 @@
 package invites
 
 import (
-	"accounts.sidooh/utils"
+	"golang.org/x/exp/slices"
 	"strings"
 )
 
 func GetInviteById(id uint, with string) (interface{}, error) {
 	relations := strings.Split(with, ",")
 
-	if utils.InArray("account", relations) && utils.InArray("inviter", relations) {
+	if slices.Contains(relations, "account") && slices.Contains(relations, "inviter") {
 		return ReadWithAccountAndInviter(id)
-	} else if utils.InArray("account", relations) {
+	} else if slices.Contains(relations, "account") {
 		return ReadWithAccount(id)
 	} else {
 		return ReadById(id)
