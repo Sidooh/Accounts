@@ -39,9 +39,15 @@ func (ModelWithAccountAndInvite) TableName() string {
 	return "invites"
 }
 
-func All() ([]Model, error) {
+func All(limit int) ([]Model, error) {
 	var invites []Model
-	result := db.Connection().Order("id desc").Find(&invites)
+	query := db.Connection().Order("id desc")
+
+	if limit > 0 {
+		query = query.Limit(limit)
+	}
+
+	result := query.Find(&invites)
 	if result.Error != nil {
 		return invites, result.Error
 	}

@@ -18,7 +18,7 @@ type CreateInviteRequest struct {
 func RegisterInvitesHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	e.GET(constants.API_URL+"/invites", func(context echo.Context) error {
 
-		invites, err := Invite.All()
+		invites, err := Invite.All(constants.DEFAULT_QUERY_LIMIT)
 		if err != nil {
 			return util.HandleErrorResponse(context, err)
 		}
