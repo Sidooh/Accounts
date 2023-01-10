@@ -14,7 +14,7 @@ type CreateSecurityQuestionRequest struct {
 }
 
 func RegisterSecurityQuestionsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
-	e.GET(constants.API_URL+"/security-question-answers", func(context echo.Context) error {
+	e.GET(constants.API_URL+"/security-questions", func(context echo.Context) error {
 
 		securityQuestions, err := security_questions.ReadAll()
 		if err != nil {
@@ -25,7 +25,7 @@ func RegisterSecurityQuestionsHandler(e *echo.Echo, authMiddleware echo.Middlewa
 
 	}, authMiddleware)
 
-	e.POST(constants.API_URL+"/security-question-answers", func(context echo.Context) error {
+	e.POST(constants.API_URL+"/security-questions", func(context echo.Context) error {
 		request := new(CreateSecurityQuestionRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err
