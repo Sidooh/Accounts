@@ -26,7 +26,6 @@ type SignInResponse struct {
 
 func RegisterSignInHandler(e *echo.Echo) {
 	e.POST(constants.API_URL+"/users/signin", func(context echo.Context) error {
-
 		request := new(SignInRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err

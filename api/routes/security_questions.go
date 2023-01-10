@@ -22,7 +22,6 @@ func RegisterSecurityQuestionsHandler(e *echo.Echo, authMiddleware echo.Middlewa
 		}
 
 		return utils.HandleSuccessResponse(context, securityQuestions)
-
 	}, authMiddleware)
 
 	e.POST(constants.API_URL+"/security-questions", func(context echo.Context) error {
@@ -40,6 +39,5 @@ func RegisterSecurityQuestionsHandler(e *echo.Echo, authMiddleware echo.Middlewa
 		}
 
 		return utils.HandleSuccessResponse(context, question)
-
 	}, authMiddleware)
 }

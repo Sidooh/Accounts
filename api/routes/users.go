@@ -21,12 +21,12 @@ type UserByIdRequest struct {
 
 func RegisterUsersHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	e.GET(constants.API_URL+"/users", func(context echo.Context) error {
-		users, err := users.ReadAll()
+		fetchedUsers, err := users.ReadAll()
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
 
-		return utils.HandleSuccessResponse(context, users)
+		return utils.HandleSuccessResponse(context, fetchedUsers)
 	}, authMiddleware)
 
 	e.GET(constants.API_URL+"/users/:id", func(context echo.Context) error {
@@ -65,12 +65,12 @@ func RegisterUsersHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return err
 		}
 
-		users, err := users.SearchByEmail(request.Email)
+		fetchedUsers, err := users.SearchByEmail(request.Email)
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
 
-		return utils.HandleSuccessResponse(context, users)
+		return utils.HandleSuccessResponse(context, fetchedUsers)
 	}, authMiddleware)
 
 	e.POST(constants.API_URL+"/users/:id/reset-password", func(ctx echo.Context) error {

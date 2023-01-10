@@ -48,7 +48,6 @@ func RegisterSecurityQuestionAnswersHandler(e *echo.Echo, authMiddleware echo.Mi
 		}
 
 		return utils.HandleSuccessResponse(context, securityQuestions)
-
 	}, authMiddleware)
 
 	e.POST(constants.API_URL+"/accounts/:id/security-question-answers/answers", func(context echo.Context) error {
@@ -77,7 +76,6 @@ func RegisterSecurityQuestionAnswersHandler(e *echo.Echo, authMiddleware echo.Mi
 		}
 
 		return utils.HandleSuccessResponse(context, question)
-
 	}, authMiddleware)
 
 	e.POST(constants.API_URL+"/accounts/:id/security-question-answers/check", func(context echo.Context) error {
@@ -102,11 +100,9 @@ func RegisterSecurityQuestionAnswersHandler(e *echo.Echo, authMiddleware echo.Mi
 		}
 
 		return utils.HandleSuccessResponse(context, true)
-
 	}, authMiddleware)
 
 	e.GET(constants.API_URL+"/accounts/:id/has-security-question-answers", func(context echo.Context) error {
-
 		request := new(QuestionsByAccountIdRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			return err
@@ -123,6 +119,5 @@ func RegisterSecurityQuestionAnswersHandler(e *echo.Echo, authMiddleware echo.Mi
 		}
 
 		return utils.HandleSuccessResponse(context, true)
-
 	}, authMiddleware)
 }

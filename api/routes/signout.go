@@ -9,7 +9,6 @@ import (
 
 func RegisterSignOutHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	e.POST(constants.API_URL+"/users/signout", func(context echo.Context) error {
-
 		utils.InvalidateToken(context)
 		context.Set("user", nil)
 
