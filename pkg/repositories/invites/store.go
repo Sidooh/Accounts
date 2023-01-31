@@ -25,6 +25,21 @@ func ReadAll(limit int) ([]entities.Invite, error) {
 
 	return invites, nil
 }
+func ReadAllWithInviter(limit int) ([]entities.InviteWithInviter, error) {
+	var invites []entities.InviteWithInviter
+	query := db.Connection().Preload("Inviter").Preload("Inviter.User").Order("id desc")
+
+	if limit > 0 {
+		query = query.Limit(limit)
+	}
+
+	result := query.Find(&invites)
+	if result.Error != nil {
+		return invites, result.Error
+	}
+
+	return invites, nil
+}
 
 func Create(r entities.Invite) (entities.Invite, error) {
 	if r.InviterID == 0 {
