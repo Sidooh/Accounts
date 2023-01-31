@@ -47,6 +47,23 @@ func ReadAllWithUser(limit int) ([]interface{}, error) {
 	return accounts, nil
 }
 
+func ReadAllWithUserAndInviter(limit int) ([]entities.AccountWithUserAndInviter, error) {
+	var accountsWithUserAndInviters []entities.AccountWithUserAndInviter
+	query := db.Connection().Joins("User").Joins("Inviter").Order("id desc")
+
+	if limit > 0 {
+		query = query.Limit(limit)
+	}
+
+	result := query.Find(&accountsWithUserAndInviters)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return accountsWithUserAndInviters, nil
+}
+
 // TODO: Check whether using pointers here saves memory
 func CreateAccount(a entities.Account) (entities.Account, error) {
 	_, err := ReadByPhone(a.Phone)

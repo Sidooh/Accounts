@@ -72,7 +72,7 @@ func RegisterDashboardHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) 
 	}, authMiddleware)
 
 	e.GET(constants.API_DASHBOARD_URL+"/recent-accounts", func(context echo.Context) error {
-		data, err := accountsRepo.GetAccounts(true, 20)
+		data, err := accountsRepo.GetAccounts(true, true, 20)
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
