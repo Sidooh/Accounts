@@ -24,7 +24,7 @@ type InviteWithAccount struct {
 type InviteWithInviter struct {
 	Invite
 
-	Inviter *Account `json:"inviter"`
+	Inviter *AccountWithUser `json:"inviter"`
 }
 
 type InviteWithAccountAndInviter struct {

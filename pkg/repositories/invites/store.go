@@ -27,7 +27,7 @@ func ReadAll(limit int) ([]entities.Invite, error) {
 }
 func ReadAllWithInviter(limit int) ([]entities.InviteWithInviter, error) {
 	var invites []entities.InviteWithInviter
-	query := db.Connection().Joins("Inviter").Order("id desc")
+	query := db.Connection().Preload("Inviter").Preload("Inviter.User").Order("id desc")
 
 	if limit > 0 {
 		query = query.Limit(limit)
