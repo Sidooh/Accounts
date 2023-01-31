@@ -17,7 +17,7 @@ type CreateInviteRequest struct {
 }
 
 type InvitesRequest struct {
-	With string `query:"with" validate:"omitempty,contains=account inviter"`
+	With string `query:"with" validate:"omitempty,containsany=account inviter"`
 }
 
 type InviteByIdRequest struct {
@@ -27,7 +27,12 @@ type InviteByIdRequest struct {
 
 func RegisterInvitesHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	e.GET(constants.API_URL+"/invites", func(context echo.Context) error {
-		invites, err := invitesRepo.ReadAll(constants.DEFAULT_QUERY_LIMIT)
+		request := new(InvitesRequest)
+		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
+			return err
+		}
+
+		invites, err := invitesRepo.GetInvites(request.With, constants.DEFAULT_QUERY_LIMIT)
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
@@ -57,7 +62,6 @@ func RegisterInvitesHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	}, authMiddleware)
 
 	e.GET(constants.API_URL+"/invites/phone/:phone", func(context echo.Context) error {
-
 		phone := context.Param("phone")
 
 		phone, err := utils.GetPhoneByCountry("KE", phone)
