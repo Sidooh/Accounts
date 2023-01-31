@@ -64,7 +64,10 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return err
 		}
 
-		accounts, err := accounts.GetAccounts(request.WithUser == "true", false, constants.DEFAULT_QUERY_LIMIT)
+		withUser := request.WithUser == "true"
+		withInviter := request.WithInviter == "true"
+
+		accounts, err := accounts.GetAccounts(withUser, withInviter, constants.DEFAULT_QUERY_LIMIT)
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
