@@ -30,8 +30,8 @@ type AccountWithUser struct {
 type AccountWithUserAndInviter struct {
 	Account
 
-	User    *User    `json:"user"`
-	Inviter *Account `json:"inviter"`
+	User    *User            `json:"user"`
+	Inviter *AccountWithUser `json:"inviter"`
 }
 
 type InviteModel struct {
