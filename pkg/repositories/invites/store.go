@@ -157,7 +157,7 @@ func ReadTimeSeriesCount(limit int) (interface{}, error) {
 		Count int `json:"count"`
 	}
 	result := db.Connection().Raw(`
-SELECT EXTRACT(YEAR_MONTH FROM created_at) as date, COUNT(id) as count
+SELECT CONCAT(EXTRACT(YEAR_MONTH FROM created_at), EXTRACT(DAY FROM created_at)) as date, COUNT(id) as count
 	FROM invites
 	GROUP BY date
 	ORDER BY date DESC
