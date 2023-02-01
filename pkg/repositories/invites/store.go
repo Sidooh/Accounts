@@ -151,7 +151,7 @@ func MarkExpired() error {
 	return nil
 }
 
-func ReadTimeSeriesCount(limit int) (interface{}, error) {
+func ReadTimeSeriesCount() (interface{}, error) {
 	var invites []struct {
 		Date  int `json:"date"`
 		Count int `json:"count"`
@@ -160,8 +160,7 @@ func ReadTimeSeriesCount(limit int) (interface{}, error) {
 SELECT CONCAT(EXTRACT(YEAR_MONTH FROM created_at), EXTRACT(DAY FROM created_at)) as date, COUNT(id) as count
 	FROM invites
 	GROUP BY date
-	ORDER BY date DESC
-	LIMIT ?`, limit).Scan(&invites)
+	ORDER BY date DESC`).Scan(&invites)
 	if result.Error != nil {
 		return nil, result.Error
 	}

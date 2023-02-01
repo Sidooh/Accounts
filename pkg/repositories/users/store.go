@@ -94,7 +94,7 @@ func find(query interface{}, args interface{}) (entities.User, error) {
 	return user, nil
 }
 
-func ReadTimeSeriesCount(limit int) (interface{}, error) {
+func ReadTimeSeriesCount() (interface{}, error) {
 	var users []struct {
 		Date  int `json:"date"`
 		Count int `json:"count"`
@@ -103,8 +103,7 @@ func ReadTimeSeriesCount(limit int) (interface{}, error) {
 SELECT CONCAT(EXTRACT(YEAR_MONTH FROM created_at), EXTRACT(DAY FROM created_at)) as date, COUNT(id) as count
 	FROM users
 	GROUP BY date
-	ORDER BY date DESC
-	LIMIT ?`, limit).Scan(&users)
+	ORDER BY date DESC`).Scan(&users)
 	if result.Error != nil {
 		return nil, result.Error
 	}
