@@ -97,7 +97,7 @@ func ReadWithUser(id uint) (*entities.AccountWithUser, error) {
 func ReadWithUserAndInviter(id uint) (*entities.AccountWithUserAndInviter, error) {
 	accountWithUserAndInviter := new(entities.AccountWithUserAndInviter)
 
-	result := db.Connection().Joins("User").Joins("Inviter").First(&accountWithUserAndInviter, id)
+	result := db.Connection().Joins("User").Joins("Inviter").Preload("Inviter.User").First(&accountWithUserAndInviter, id)
 	if result.Error != nil {
 		return nil, result.Error
 	}
