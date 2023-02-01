@@ -188,8 +188,8 @@ func ResetPin(id uint) error {
 	return nil
 }
 
-func GetAccountsTimeData(limit int) (interface{}, error) {
-	return ReadAccountsTimeSeriesCount(limit)
+func GetAccountsTimeData() (interface{}, error) {
+	return ReadAccountsTimeSeriesCount()
 }
 
 func GetAccountsSummary() (interface{}, error) {
