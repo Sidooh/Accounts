@@ -19,7 +19,7 @@ func RegisterDashboardHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) 
 			return utils.HandleErrorResponse(context, err)
 		}
 
-		accounts, err := accountsRepo.GetAccountsTimeData(12)
+		accounts, err := accountsRepo.GetAccountsTimeData()
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}

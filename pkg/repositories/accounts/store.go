@@ -216,7 +216,7 @@ func ReadDescendants(id uint, levelLimit uint) ([]entities.InviteModel, error) {
 	return accounts, nil
 }
 
-func ReadAccountsTimeSeriesCount(limit int) (interface{}, error) {
+func ReadAccountsTimeSeriesCount() (interface{}, error) {
 	var accounts []struct {
 		Date  int `json:"date"`
 		Count int `json:"count"`
@@ -225,8 +225,7 @@ func ReadAccountsTimeSeriesCount(limit int) (interface{}, error) {
 SELECT CONCAT(EXTRACT(YEAR_MONTH FROM created_at), EXTRACT(DAY FROM created_at)) as date, COUNT(id) as count
 	FROM accounts
 	GROUP BY date
-	ORDER BY date DESC
-	LIMIT ?`, limit).Scan(&accounts)
+	ORDER BY date DESC`).Scan(&accounts)
 	if result.Error != nil {
 		return nil, result.Error
 	}
