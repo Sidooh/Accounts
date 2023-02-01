@@ -14,7 +14,7 @@ import (
 
 func RegisterDashboardHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	e.GET(constants.API_DASHBOARD_URL+"/chart", func(context echo.Context) error {
-		users, err := usersRepo.ReadTimeSeriesCount(12)
+		users, err := usersRepo.ReadTimeSeriesCount()
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
@@ -24,7 +24,7 @@ func RegisterDashboardHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) 
 			return utils.HandleErrorResponse(context, err)
 		}
 
-		invites, err := invitesRepo.ReadTimeSeriesCount(12)
+		invites, err := invitesRepo.ReadTimeSeriesCount()
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
