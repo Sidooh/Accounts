@@ -195,3 +195,35 @@ func GetAccountsTimeData() (interface{}, error) {
 func GetAccountsSummary() (interface{}, error) {
 	return ReadAccountsSummaries()
 }
+
+func DeactivateAccount(id uint) error {
+	//	Get Account
+	account, err := ReadById(id)
+	if err != nil {
+		return errors.New("account not found")
+	}
+
+	//	Set inactive
+	result := account.Update("active", "0")
+	if result.Error != nil {
+		return errors.New("unable to deactivate account")
+	}
+
+	return nil
+}
+
+func ActivateAccount(id uint) error {
+	//	Get Account
+	account, err := ReadById(id)
+	if err != nil {
+		return errors.New("account not found")
+	}
+
+	//	Set active
+	result := account.Update("active", "1")
+	if result.Error != nil {
+		return errors.New("unable to activate account")
+	}
+
+	return nil
+}

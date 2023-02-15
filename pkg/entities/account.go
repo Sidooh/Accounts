@@ -43,10 +43,10 @@ type InviteModel struct {
 func (*Account) TableName() string {
 	return "accounts"
 }
-func (AccountWithUser) TableName() string {
+func (*AccountWithUser) TableName() string {
 	return "accounts"
 }
-func (AccountWithUserAndInviter) TableName() string {
+func (*AccountWithUserAndInviter) TableName() string {
 	return "accounts"
 }
 
