@@ -336,4 +336,42 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		return utils.HandleSuccessResponse(context, true)
 	}, authMiddleware)
+
+	e.POST(constants.API_URL+"/accounts/:id/deactivate", func(context echo.Context) error {
+		request := new(AccountByIdRequest)
+		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
+			return err
+		}
+
+		id, err := strconv.ParseUint(context.Param("id"), 10, 32)
+		if err != nil {
+			return echo.NewHTTPError(422, pkg.BadRequestError{Message: err.Error()}.Errors())
+		}
+
+		err = accounts.DeactivateAccount(uint(id))
+		if err != nil {
+			return echo.NewHTTPError(400, pkg.BadRequestError{Message: err.Error()}.Errors())
+		}
+
+		return utils.HandleSuccessResponse(context, true)
+	}, authMiddleware)
+
+	e.POST(constants.API_URL+"/accounts/:id/activate", func(context echo.Context) error {
+		request := new(AccountByIdRequest)
+		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
+			return err
+		}
+
+		id, err := strconv.ParseUint(context.Param("id"), 10, 32)
+		if err != nil {
+			return echo.NewHTTPError(422, pkg.BadRequestError{Message: err.Error()}.Errors())
+		}
+
+		err = accounts.ActivateAccount(uint(id))
+		if err != nil {
+			return echo.NewHTTPError(400, pkg.BadRequestError{Message: err.Error()}.Errors())
+		}
+
+		return utils.HandleSuccessResponse(context, true)
+	}, authMiddleware)
 }
