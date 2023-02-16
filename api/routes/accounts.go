@@ -9,6 +9,8 @@ import (
 	"accounts.sidooh/utils/constants"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"net/http"
 	"strconv"
 	"strings"
@@ -310,7 +312,7 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return context.JSON(http.StatusUnprocessableEntity, utils.IdValidationErrorResponse(request.Id))
 		}
 
-		user, err := accounts.UpdateProfile(uint(id), request.Name)
+		user, err := accounts.UpdateProfile(uint(id), cases.Title(language.English).String(request.Name))
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
