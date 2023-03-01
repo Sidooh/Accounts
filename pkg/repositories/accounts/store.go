@@ -260,9 +260,10 @@ FROM accounts`, today, month, year).Scan(&accounts)
 
 func ReadAccountsTimeSeries() (interface{}, error) {
 	var accounts []struct {
-		Hour  int `json:"hour"`
+		Date  int `json:"date"`
 		Count int `json:"count"`
 	}
+
 	result := db.Connection().Raw(`
 SELECT DATE_FORMAT(created_at, '%Y%m%d%H') as date, COUNT(id) as count
 	FROM accounts
