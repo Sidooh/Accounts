@@ -2,7 +2,7 @@ package api
 
 import (
 	middlewares2 "accounts.sidooh/api/middlewares"
-	routes2 "accounts.sidooh/api/routes"
+	"accounts.sidooh/api/routes"
 	"accounts.sidooh/pkg"
 	"accounts.sidooh/pkg/clients"
 	"accounts.sidooh/utils"
@@ -64,10 +64,10 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 
 	authMiddlewareFunc := middlewares2.TokenAuth(viper.GetString("JWT_KEY"))
 
-	routes2.RegisterCurrentUserHandler(e, authMiddlewareFunc)
-	routes2.RegisterSignInHandler(e)
-	routes2.RegisterSignUpHandler(e)
-	routes2.RegisterSignOutHandler(e, authMiddlewareFunc)
+	routes.RegisterCurrentUserHandler(e, authMiddlewareFunc)
+	routes.RegisterSignInHandler(e)
+	routes.RegisterSignUpHandler(e)
+	routes.RegisterSignOutHandler(e, authMiddlewareFunc)
 
 	// TODO: Review this properly
 	//refreshAuthMiddlewareFunc := middlewares.RefreshTokenAuth(viper.GetString("JWT_KEY"))
@@ -75,13 +75,14 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 
 	// TODO: Add client auth endpoints clients/token & clients/refresh-token(token/refresh)?
 
-	routes2.RegisterAccountsHandler(e, authMiddlewareFunc)
-	routes2.RegisterInvitesHandler(e, authMiddlewareFunc)
-	routes2.RegisterUsersHandler(e, authMiddlewareFunc)
-	routes2.RegisterSecurityQuestionsHandler(e, authMiddlewareFunc)
-	routes2.RegisterSecurityQuestionAnswersHandler(e, authMiddlewareFunc)
+	routes.RegisterAccountsHandler(e, authMiddlewareFunc)
+	routes.RegisterInvitesHandler(e, authMiddlewareFunc)
+	routes.RegisterUsersHandler(e, authMiddlewareFunc)
+	routes.RegisterSecurityQuestionsHandler(e, authMiddlewareFunc)
+	routes.RegisterSecurityQuestionAnswersHandler(e, authMiddlewareFunc)
 
-	routes2.RegisterDashboardHandler(e, authMiddlewareFunc)
+	routes.RegisterDashboardHandler(e, authMiddlewareFunc)
+	routes.RegisterAnalyticsHandler(e, authMiddlewareFunc)
 
 	//-------------------
 	// Custom middleware

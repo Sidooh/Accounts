@@ -188,7 +188,7 @@ func ResetPin(id uint) error {
 	return nil
 }
 
-func GetAccountsTimeData() (interface{}, error) {
+func GetAccountsTimeSeriesCount() (interface{}, error) {
 	return ReadAccountsTimeSeriesCount()
 }
 
@@ -226,4 +226,8 @@ func ActivateAccount(id uint) error {
 	}
 
 	return nil
+}
+
+func GetAccountsTimeSeries() (interface{}, error) {
+	return ReadAccountsTimeSeries()
 }

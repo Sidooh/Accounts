@@ -257,3 +257,20 @@ FROM accounts`, today, month, year).Scan(&accounts)
 
 	return accounts, nil
 }
+
+func ReadAccountsTimeSeries() (interface{}, error) {
+	var accounts []struct {
+		Hour  int `json:"hour"`
+		Count int `json:"count"`
+	}
+	result := db.Connection().Raw(`
+SELECT CONCAT(EXTRACT(YEAR_MONTH FROM created_at), EXTRACT(DAY FROM created_at), EXTRACT(HOUR FROM created_at)) as hour, COUNT(id) as count
+	FROM accounts
+	GROUP BY hour
+	ORDER BY hour DESC`).Scan(&accounts)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return accounts, nil
+}
