@@ -8,7 +8,7 @@ import (
 )
 
 func RegisterAnalyticsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
-	e.GET(constants.API_DASHBOARD_URL+"/analytics/accounts", func(ctx echo.Context) error {
+	e.GET(constants.API_ANALYTICS_URL+"/accounts", func(ctx echo.Context) error {
 		dataset, err := accountsRepo.GetAccountsTimeSeries()
 		if err != nil {
 			return utils.HandleErrorResponse(ctx, err)
