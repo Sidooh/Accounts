@@ -264,10 +264,10 @@ func ReadAccountsTimeSeries() (interface{}, error) {
 		Count int `json:"count"`
 	}
 	result := db.Connection().Raw(`
-SELECT CONCAT(EXTRACT(YEAR_MONTH FROM created_at), EXTRACT(DAY FROM created_at), EXTRACT(HOUR FROM created_at)) as hour, COUNT(id) as count
+SELECT DATE_FORMAT(created_at, '%Y%m%d%H') as date, COUNT(id) as count
 	FROM accounts
-	GROUP BY hour
-	ORDER BY hour DESC`).Scan(&accounts)
+	GROUP BY date
+	ORDER BY date DESC`).Scan(&accounts)
 	if result.Error != nil {
 		return nil, result.Error
 	}
