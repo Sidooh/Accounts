@@ -16,7 +16,7 @@ require (
 	github.com/tryvium-travels/memongo v0.3.1
 	github.com/ttacon/libphonenumber v1.2.1
 	go.mongodb.org/mongo-driver v1.7.4
-	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
+	golang.org/x/crypto v0.1.0
 	golang.org/x/exp v0.0.0-20230108222341-4b8118a2686a
 	golang.org/x/net v0.7.0
 	golang.org/x/text v0.7.0
