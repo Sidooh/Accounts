@@ -216,23 +216,6 @@ func ReadDescendants(id uint, levelLimit uint) ([]entities.InviteModel, error) {
 	return accounts, nil
 }
 
-func ReadAccountsTimeSeriesCount() (interface{}, error) {
-	var accounts []struct {
-		Date  int `json:"date"`
-		Count int `json:"count"`
-	}
-	result := db.Connection().Raw(`
-SELECT CONCAT(EXTRACT(YEAR_MONTH FROM created_at), EXTRACT(DAY FROM created_at)) as date, COUNT(id) as count
-	FROM accounts
-	GROUP BY date
-	ORDER BY date DESC`).Scan(&accounts)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-
-	return accounts, nil
-}
-
 func ReadAccountsSummaries() (interface{}, error) {
 	var accounts struct {
 		Today int `json:"today"`
@@ -251,6 +234,24 @@ func ReadAccountsSummaries() (interface{}, error) {
     	SUM(created_at > ?) as year,
        COUNT(created_at) as total
 FROM accounts`, today, month, year).Scan(&accounts)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return accounts, nil
+}
+
+func ReadTimeSeriesCount() (interface{}, error) {
+	var accounts []struct {
+		Date  int `json:"date"`
+		Count int `json:"count"`
+	}
+
+	result := db.Connection().Raw(`
+SELECT DATE_FORMAT(created_at, '%Y%m%d%H') as date, COUNT(id) as count
+	FROM accounts
+	GROUP BY date
+	ORDER BY date DESC`).Scan(&accounts)
 	if result.Error != nil {
 		return nil, result.Error
 	}

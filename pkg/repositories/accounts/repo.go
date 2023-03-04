@@ -188,14 +188,6 @@ func ResetPin(id uint) error {
 	return nil
 }
 
-func GetAccountsTimeData() (interface{}, error) {
-	return ReadAccountsTimeSeriesCount()
-}
-
-func GetAccountsSummary() (interface{}, error) {
-	return ReadAccountsSummaries()
-}
-
 func DeactivateAccount(id uint) error {
 	//	Get Account
 	account, err := ReadById(id)
@@ -226,4 +218,12 @@ func ActivateAccount(id uint) error {
 	}
 
 	return nil
+}
+
+func GetAccountsSummary() (interface{}, error) {
+	return ReadAccountsSummaries()
+}
+
+func GetAccountsTimeSeries() (interface{}, error) {
+	return ReadTimeSeriesCount()
 }
