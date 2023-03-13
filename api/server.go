@@ -1,7 +1,7 @@
 package api
 
 import (
-	middlewares2 "accounts.sidooh/api/middlewares"
+	"accounts.sidooh/api/middlewares"
 	"accounts.sidooh/api/routes"
 	"accounts.sidooh/pkg"
 	"accounts.sidooh/pkg/clients"
@@ -60,9 +60,9 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 		e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(rate.Limit(rateLimiterRequests))))
 	}
 
-	e.Validator = &middlewares2.CustomValidator{Validator: validator.New()}
+	e.Validator = &middlewares.CustomValidator{Validator: validator.New()}
 
-	authMiddlewareFunc := middlewares2.TokenAuth(viper.GetString("JWT_KEY"))
+	authMiddlewareFunc := middlewares.TokenAuth(viper.GetString("JWT_KEY"))
 
 	routes.RegisterCurrentUserHandler(e, authMiddlewareFunc)
 	routes.RegisterSignInHandler(e)
@@ -88,9 +88,9 @@ func Setup() (*echo.Echo, string, *http2.Server) {
 	// Custom middleware
 	//-------------------
 	// Stats
-	statsMiddleware := middlewares2.NewStats()
+	statsMiddleware := middlewares.NewStats()
 	e.Use(statsMiddleware.Process)
-	e.Use(middlewares2.ServerHeader)
+	e.Use(middlewares.ServerHeader)
 	e.GET(constants.API_URL+"/stats", statsMiddleware.Handle) // Endpoint to get stats
 
 	e.Any("*", func(context echo.Context) error {
