@@ -19,9 +19,15 @@ func Init() {
 	ServerLog = log.New()
 
 	env := viper.GetString("APP_ENV")
+	logger := viper.GetString("LOGGER")
 
 	if env != "TEST" {
-		ClientLog.SetOutput(utils.GetLogFile("client.log"))
-		ServerLog.SetOutput(utils.GetLogFile("server.log"))
+		if logger == "GCP" {
+			ClientLog.SetFormatter(NewGCEFormatter(false))
+			ServerLog.SetFormatter(NewGCEFormatter(false))
+		} else {
+			ClientLog.SetOutput(utils.GetLogFile("client.log"))
+			ServerLog.SetOutput(utils.GetLogFile("server.log"))
+		}
 	}
 }
