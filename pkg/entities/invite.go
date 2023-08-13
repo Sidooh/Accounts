@@ -12,6 +12,8 @@ type Invite struct {
 	AccountID uint   `json:"account_id,omitempty"`
 	InviterID uint   `json:"inviter_id"`
 
+	Type string `json:"type,omitempty" gorm:"size:32"`
+
 	ModelTimeStamps
 }
 
