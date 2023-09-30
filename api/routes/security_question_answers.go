@@ -50,7 +50,7 @@ func RegisterSecurityQuestionAnswersHandler(e *echo.Echo, authMiddleware echo.Mi
 		return utils.HandleSuccessResponse(context, securityQuestions)
 	}, authMiddleware)
 
-	e.POST(constants.API_URL+"/accounts/:id/security-question-answers/answers", func(context echo.Context) error {
+	e.POST(constants.API_URL+"/accounts/:id/security-question-answers", func(context echo.Context) error {
 		request := new(CreateSecurityQuestionAnswersRequest)
 		if err := middlewares.BindAndValidateRequest(context, request); err != nil {
 			request.Id = context.Param("id")
