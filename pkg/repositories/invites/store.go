@@ -10,12 +10,17 @@ import (
 	"time"
 )
 
-func ReadAll(limit int) ([]entities.Invite, error) {
+func ReadAll(days, limit int) ([]entities.Invite, error) {
 	var invites []entities.Invite
 	query := db.Connection().Order("id desc")
 
 	if limit > 0 {
 		query = query.Limit(limit)
+	}
+
+	if days > 0 {
+		duration := time.Duration(days) * 24 * time.Hour
+		query = query.Where("created_at > ?", time.Now().Add(-duration))
 	}
 
 	result := query.Find(&invites)

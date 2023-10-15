@@ -5,13 +5,13 @@ import (
 	"strings"
 )
 
-func GetInvites(with string, limit int) (interface{}, error) {
+func GetInvites(with string, days, limit int) (interface{}, error) {
 	relations := strings.Split(with, ",")
 
 	if slices.Contains(relations, "inviter") {
 		return ReadAllWithInviter(limit)
 	} else {
-		return ReadAll(limit)
+		return ReadAll(days, limit)
 	}
 }
 

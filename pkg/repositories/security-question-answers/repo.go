@@ -46,5 +46,5 @@ func HasSecurityQuestions(id uint) error {
 		return nil
 	}
 
-	return errors.New("invalid answers found")
+	return errors.New("record not found")
 }

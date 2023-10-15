@@ -16,7 +16,7 @@ type QuestionAnswerWithQuestion struct {
 	// 	related: Since this only brings back id, is it necessary?
 	QuestionAnswer /*`json:"-"`*/
 
-	Question QuestionAnswer `json:"question"`
+	Question Question `json:"question"`
 }
 
 type QuestionAnswerWithAccountAndQuestion struct {

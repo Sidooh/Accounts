@@ -41,6 +41,7 @@ type AncestorsOrDescendantRequest struct {
 type AccountsRequest struct {
 	WithUser    string `query:"with_user" validate:"omitempty,oneof=true false"`
 	WithInviter string `query:"with_inviter" validate:"omitempty,oneof=true false"`
+	Days        string `query:"days" validate:"omitempty,numeric"`
 }
 
 type AccountByIdRequest struct {
@@ -68,8 +69,9 @@ func RegisterAccountsHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 
 		withUser := request.WithUser == "true"
 		withInviter := request.WithInviter == "true"
+		days, _ := strconv.ParseUint(request.Days, 10, 32)
 
-		accounts, err := accounts.GetAccounts(withUser, withInviter, constants.DEFAULT_QUERY_LIMIT)
+		accounts, err := accounts.GetAccounts(withUser, withInviter, int(days), constants.DEFAULT_QUERY_LIMIT)
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}

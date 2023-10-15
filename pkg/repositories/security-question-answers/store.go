@@ -53,7 +53,7 @@ func ReadByAccountIdWithQuestion(id uint) ([]entities.QuestionAnswerWithQuestion
 
 	// TODO: Should we check for existence of account first?
 	// TODO: Can we flatten the results from here? (like array flatten)
-	result := db.Connection().Where("account_id = ?", id).Joins("Question").Find(&questions)
+	result := db.Connection().Where("security_question_answers.account_id = ?", id).Joins("Question").Find(&questions)
 	if result.Error != nil {
 		return questions, result.Error
 	}

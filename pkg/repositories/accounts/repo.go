@@ -133,13 +133,13 @@ func UpdateProfile(id uint, name string) (entities.User, error) {
 	}
 }
 
-func GetAccounts(withUser bool, withInviter bool, limit int) (interface{}, error) {
+func GetAccounts(withUser bool, withInviter bool, days int, limit int) (interface{}, error) {
 	if withUser && withInviter {
 		return ReadAllWithUserAndInviter(limit)
 	} else if withUser {
 		return ReadAllWithUser(limit)
 	} else {
-		return ReadAll()
+		return ReadAll(days)
 	}
 }
 

@@ -19,6 +19,7 @@ type CreateInviteRequest struct {
 
 type InvitesRequest struct {
 	With string `query:"with" validate:"omitempty,containsany=account inviter"`
+	Days string `query:"days" validate:"omitempty,numeric"`
 }
 
 type InviteByIdRequest struct {
@@ -33,7 +34,9 @@ func RegisterInvitesHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 			return err
 		}
 
-		invites, err := invitesRepo.GetInvites(request.With, constants.DEFAULT_QUERY_LIMIT)
+		days, _ := strconv.ParseUint(request.Days, 10, 32)
+
+		invites, err := invitesRepo.GetInvites(request.With, int(days), constants.DEFAULT_QUERY_LIMIT)
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
 		}
