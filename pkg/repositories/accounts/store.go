@@ -9,9 +9,16 @@ import (
 	"time"
 )
 
-func ReadAll() ([]entities.Account, error) {
+func ReadAll(days int) ([]entities.Account, error) {
 	var accounts []entities.Account
-	result := db.Connection().Order("id desc").Find(&accounts)
+
+	query := db.Connection().Order("id desc")
+	if days > 0 {
+		duration := time.Duration(days) * 24 * time.Hour
+		query = query.Where("created_at > ?", time.Now().Add(-duration))
+	}
+
+	result := query.Find(&accounts)
 	if result.Error != nil {
 		return accounts, result.Error
 	}

@@ -53,7 +53,7 @@ func TestAll(t *testing.T) {
 	account1 := CreateRandomAccount(t, utils.RandomPhone())
 	account2 := CreateRandomAccount(t, utils.RandomPhone())
 
-	accounts, err := ReadAll()
+	accounts, err := ReadAll(30)
 	require.NoError(t, err)
 	require.NotEmpty(t, accounts)
 	require.GreaterOrEqual(t, len(accounts), 2)
