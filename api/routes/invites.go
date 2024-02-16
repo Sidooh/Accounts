@@ -14,6 +14,7 @@ import (
 type CreateInviteRequest struct {
 	InviterId string `json:"inviter_id" form:"inviter_id" validate:"required,numeric"`
 	Phone     string `json:"phone" form:"phone" validate:"required,numeric"`
+	Type      string `query:"type" validate:"omitempty"`
 }
 
 type InvitesRequest struct {
@@ -100,6 +101,7 @@ func RegisterInvitesHandler(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 		invite, err := invitesRepo.Create(entities.Invite{
 			InviterID: uint(InviterId),
 			Phone:     phone,
+			Type:      request.Type,
 		})
 		if err != nil {
 			return utils.HandleErrorResponse(context, err)
