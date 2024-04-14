@@ -17,10 +17,6 @@ const (
 	allCharSet     = lowerCharSet + upperCharSet + specialCharSet + numberSet
 )
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
-
 // RandomBool generates a random boolean
 func RandomBool() bool {
 	return rand.Intn(2) >= 1
