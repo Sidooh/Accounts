@@ -13,7 +13,7 @@ func GenerateOTP(phone string) error {
 	otp := utils.GenerateOTP(phone)
 
 	// Send OTP to phone number
-	message := fmt.Sprintf("S-%v is your verification code.", otp)
+	message := fmt.Sprintf("S-%v is your Sidooh verification code.", otp)
 
 	err := notifyClient.SendSMS("DEFAULT", phone, message)
 
