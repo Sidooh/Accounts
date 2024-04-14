@@ -6,7 +6,6 @@ import (
 	"accounts.sidooh/utils/logger"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/spf13/viper"
 	"io"
 	"net/http"
@@ -143,8 +142,6 @@ func (api *ApiClient) baseRequest(method string, endpoint string, body io.Reader
 }
 
 func (api *ApiClient) NewRequest(method string, endpoint string, body io.Reader) *ApiClient {
-	fmt.Println(clientCache)
-	fmt.Println(api)
 	if token := api.cache.GetString("token"); token != "" {
 		// TODO: Check if token has expired since we should be able to decode it
 		api.baseRequest(method, endpoint, body).request.Header.Add("Authorization", "Bearer "+token)

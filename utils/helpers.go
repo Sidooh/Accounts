@@ -21,3 +21,9 @@ func ReverseInterfaceSlice(s []interface{}) {
 		s[i], s[j] = s[j], s[i]
 	}
 }
+
+// TODO: use this helper and remove from cache module
+func InterfaceToString(from interface{}) string {
+	record, _ := json.Marshal(from)
+	return string(record)
+}
